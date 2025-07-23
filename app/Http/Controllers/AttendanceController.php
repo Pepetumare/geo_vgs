@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance; // <-- Asegúrate de que el modelo Attendance esté importado
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
@@ -13,7 +15,14 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $attendances = $user->attendances()->orderBy('id', 'desc')->get();
         $lastAttendance = $user->attendances()->orderBy('id', 'desc')->first();
-        $nextAction = (!$lastAttendance || $lastAttendance->type == 'salida') ? 'entrada' : 'salida';
+        
+        $nextAction = 'entrada';
+
+        if ($lastAttendance) {
+            if ($lastAttendance->type == 'entrada' && $lastAttendance->created_at->isToday()) {
+                $nextAction = 'salida';
+            }
+        }
 
         return view('dashboard', [
             'attendances' => $attendances,
@@ -29,9 +38,28 @@ class AttendanceController extends Controller
             'longitude' => 'required|numeric',
         ]);
 
-        // --- LÓGICA DE GEOCERCA MEJORADA ---
+        $user = Auth::user();
+        $lastAttendance = $user->attendances()->orderBy('id', 'desc')->first();
+        $successMessage = '¡Registro de ' . $request->type . ' guardado con éxito!';
 
-        // La validación de la geocerca ahora SOLO se ejecuta si el marcaje es de 'entrada'.
+        if ($request->type == 'entrada') {
+            if ($lastAttendance && $lastAttendance->type == 'entrada' && !$lastAttendance->created_at->isToday()) {
+                
+                $forgottenCheckoutTime = $lastAttendance->created_at->copy()->setTime(18, 0, 0);
+
+                $forgottenAttendance = new Attendance();
+                $forgottenAttendance->user_id = $user->id;
+                $forgottenAttendance->type = 'salida';
+                $forgottenAttendance->latitude = $lastAttendance->latitude;
+                $forgottenAttendance->longitude = $lastAttendance->longitude;
+                $forgottenAttendance->created_at = $forgottenCheckoutTime;
+                $forgottenAttendance->updated_at = $forgottenCheckoutTime;
+                $forgottenAttendance->save();
+
+                $successMessage = 'Turno anterior cerrado automáticamente. ¡Nueva entrada registrada con éxito!';
+            }
+        }
+
         if ($request->type == 'entrada') {
             $companyLatitude = Config::get('company.location.latitude');
             $companyLongitude = Config::get('company.location.longitude');
@@ -44,35 +72,42 @@ class AttendanceController extends Controller
                 $companyLongitude
             );
 
-            // Si está fuera del radio, rechazamos el marcaje de entrada.
             if ($distance > $allowedRadius) {
                 return redirect()->route('dashboard')->with('error', 'Estás demasiado lejos para registrar tu ENTRADA.');
             }
         }
 
-        // --- FIN DE LA LÓGICA DE GEOCERCA ---
-
-        $lastAttendance = Auth::user()->attendances()->orderBy('id', 'desc')->first();
-        if ($lastAttendance && $lastAttendance->type == $request->type) {
-            return redirect()->route('dashboard')->with('error', 'Ya has realizado un marcaje de ' . $request->type . '.');
+        $lastAttendance = $user->attendances()->orderBy('id', 'desc')->first();
+        if ($lastAttendance && $lastAttendance->type == $request->type && $lastAttendance->created_at->isToday()) {
+            return redirect()->route('dashboard')->with('error', 'Ya has realizado un marcaje de ' . $request->type . ' hoy.');
         }
 
-        Auth::user()->attendances()->create([
+        // Preparamos los datos para el registro actual.
+        $attendanceData = [
             'type' => $request->type,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-        ]);
+        ];
 
-        return redirect()->route('dashboard')->with('status', '¡Registro de ' . $request->type . ' guardado con éxito!');
+        // --- INICIO: LÓGICA DE AJUSTE DE HORA PARA SALIDAS TARDÍAS ---
+        // Si el marcaje es de 'salida' y la hora actual es 8 PM (20:00) o más tarde...
+        if ($request->type == 'salida' && now()->hour >= 20) {
+            // ...modificamos la hora de creación para que sea a las 6 PM (18:00) del día de hoy.
+            $timestamp = now()->setHour(18)->setMinute(0)->setSecond(0);
+            
+            $attendanceData['created_at'] = $timestamp;
+            $attendanceData['updated_at'] = $timestamp;
+        }
+        // --- FIN: LÓGICA DE AJUSTE DE HORA ---
+
+        $user->attendances()->create($attendanceData);
+
+        return redirect()->route('dashboard')->with('status', $successMessage);
     }
 
-    /**
-     * Calcula la distancia entre dos puntos geográficos usando la fórmula de Haversine.
-     * Devuelve la distancia en metros.
-     */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
-        $earthRadius = 6371000; // Radio de la Tierra en metros
+        $earthRadius = 6371000;
 
         $latFrom = deg2rad($lat1);
         $lonFrom = deg2rad($lon1);
