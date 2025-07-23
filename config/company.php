@@ -18,6 +18,6 @@ return [
     ],
 
     // Radio en metros. Un empleado debe estar dentro de este radio para marcar.
-    'radius_meters' => env('COMPANY_RADIUS_METERS', 100), // 500 metros por defecto
+    'radius_meters' => env('COMPANY_RADIUS_METERS', 10), // 500 metros por defecto
 
 ];

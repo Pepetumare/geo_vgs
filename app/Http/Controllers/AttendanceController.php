@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config; // <-- Importar la clase Config
+use Illuminate\Support\Facades\Config;
 
 class AttendanceController extends Controller
 {
@@ -29,24 +29,25 @@ class AttendanceController extends Controller
             'longitude' => 'required|numeric',
         ]);
 
-        // --- INICIO DE LA LÓGICA DE GEOCERCA ---
+        // --- LÓGICA DE GEOCERCA MEJORADA ---
 
-        // Obtenemos la ubicación y radio desde el archivo de configuración
-        $companyLatitude = Config::get('company.location.latitude');
-        $companyLongitude = Config::get('company.location.longitude');
-        $allowedRadius = Config::get('company.radius_meters');
+        // La validación de la geocerca ahora SOLO se ejecuta si el marcaje es de 'entrada'.
+        if ($request->type == 'entrada') {
+            $companyLatitude = Config::get('company.location.latitude');
+            $companyLongitude = Config::get('company.location.longitude');
+            $allowedRadius = Config::get('company.radius_meters');
 
-        // Calculamos la distancia entre el empleado y la oficina
-        $distance = $this->calculateDistance(
-            $request->latitude,
-            $request->longitude,
-            $companyLatitude,
-            $companyLongitude
-        );
+            $distance = $this->calculateDistance(
+                $request->latitude,
+                $request->longitude,
+                $companyLatitude,
+                $companyLongitude
+            );
 
-        // Validamos si la distancia es mayor a la permitida
-        if ($distance > $allowedRadius) {
-            return redirect()->route('dashboard')->with('error', 'Estás demasiado lejos de la ubicación permitida para realizar el marcaje.');
+            // Si está fuera del radio, rechazamos el marcaje de entrada.
+            if ($distance > $allowedRadius) {
+                return redirect()->route('dashboard')->with('error', 'Estás demasiado lejos para registrar tu ENTRADA.');
+            }
         }
 
         // --- FIN DE LA LÓGICA DE GEOCERCA ---
@@ -83,7 +84,7 @@ class AttendanceController extends Controller
 
         $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
             cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
-
+            
         return $angle * $earthRadius;
     }
 }
