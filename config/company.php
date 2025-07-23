@@ -13,8 +13,10 @@ return [
 
     'location' => [
         // Coordenadas del centro de la geocerca (Ej: Plaza de Armas, Valdivia)
-        'latitude' => env('COMPANY_LATITUDE', -39.547544), 
-        'longitude' => env('COMPANY_LONGITUDE', -72.956661),
+        // 'latitude' => env('COMPANY_LATITUDE', -39.547544), 
+        //'longitude' => env('COMPANY_LONGITUDE', -72.956661),
+        'latitude' => env('COMPANY_LATITUDE', -34.403204), 
+        'longitude' => env('COMPANY_LONGITUDE', -58.997425),
     ],
 
     // Radio en metros. Un empleado debe estar dentro de este radio para marcar.
