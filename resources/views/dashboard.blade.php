@@ -1,18 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dashboard de Asistencia') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
 
                     <!-- Formulario de Marcaje Inteligente -->
                     <div id="attendance-box">
-                        <p class="mb-4">
+                        <p class="mb-4 text-gray-600 dark:text-gray-400">
                             @if ($nextAction == 'entrada')
                                 ¡Bienvenido! Presiona el botón para registrar tu entrada.
                             @else
@@ -43,14 +43,14 @@
 
                     <!-- Mensajes de estado -->
                     @if (session('status'))
-                        <div class="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                        <div class="mt-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded relative"
                             role="alert">
                             <strong class="font-bold">¡Éxito!</strong>
                             <span class="block sm:inline">{{ session('status') }}</span>
                         </div>
                     @endif
                     @if (session('error'))
-                        <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                        <div class="mt-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded relative"
                             role="alert">
                             <strong class="font-bold">¡Error!</strong>
                             <span class="block sm:inline">{{ session('error') }}</span>
@@ -59,17 +59,17 @@
 
                     <!-- Historial de Registros -->
                     <div class="mt-8">
-                        <h3 class="text-lg font-medium text-gray-900">Mis Últimos Registros</h3>
-                        <div class="mt-4 border-t border-gray-200">
-                            <ul class="divide-y divide-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mis Últimos Registros</h3>
+                        <div class="mt-4 border-t border-gray-200 dark:border-gray-700">
+                            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($attendances as $item)
                                     <li class="p-4 flex items-center justify-between">
                                         <div class="flex items-center">
                                             @if ($item->type == 'entrada')
                                                 <span
-                                                    class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                                                    <svg class="h-5 w-5 text-green-600" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                    class="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                                    <svg class="h-5 w-5 text-green-600 dark:text-green-400"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -77,9 +77,9 @@
                                                 </span>
                                             @else
                                                 <span
-                                                    class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center mr-3">
-                                                    <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
+                                                    class="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mr-3">
+                                                    <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -87,20 +87,23 @@
                                                 </span>
                                             @endif
                                             <div>
-                                                <strong class="text-gray-800">{{ ucfirst($item->type) }}</strong>
-                                                <p class="text-sm text-gray-600">
+                                                <strong
+                                                    class="text-gray-800 dark:text-gray-200">{{ ucfirst($item->type) }}</strong>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">
                                                     {{ $item->created_at->format('d/m/Y H:i:s') }}</p>
                                             </div>
                                         </div>
-                                        <div class="text-xs text-gray-500 text-right">
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
                                             <a href="https://www.google.com/maps?q={{ $item->latitude }},{{ $item->longitude }}"
-                                                target="_blank" class="text-indigo-600 hover:text-indigo-900">
+                                                target="_blank"
+                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                                 Ver en Mapa
                                             </a>
                                         </div>
                                     </li>
                                 @empty
-                                    <li class="p-4 text-center text-gray-500">No tienes registros aún.</li>
+                                    <li class="p-4 text-center text-gray-500 dark:text-gray-400">No tienes registros
+                                        aún.</li>
                                 @endforelse
                             </ul>
                         </div>
@@ -141,7 +144,8 @@
                             form.submit();
                         }, () => {
                             alert(
-                                'No se pudo obtener tu ubicación. Asegúrate de haber dado los permisos necesarios y vuelve a intentarlo.');
+                                'No se pudo obtener tu ubicación. Asegúrate de haber dado los permisos necesarios y vuelve a intentarlo.'
+                                );
                             actionBtn.disabled = false;
                             actionBtn.innerHTML = '{{ ucfirst($nextAction) }}';
                         }, {
