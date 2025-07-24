@@ -106,13 +106,12 @@
                                                             <th class="px-4 py-2 text-left font-medium">Salida</th>
                                                             <th class="px-4 py-2 text-left font-medium">Duración</th>
                                                             <th class="px-4 py-2 text-left font-medium">Alerta</th>
+                                                            <th class="px-4 py-2 text-left font-medium">Acciones</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($shifts as $shift)
                                                             <tr class="border-b dark:border-gray-700">
-                                                                <!-- --- CAMBIO CLAVE AQUÍ --- -->
-                                                                <!-- Accedemos a la fecha a través de la propiedad 'created_at' -->
                                                                 <td class="px-4 py-2">
                                                                     {{ $shift['entrada']->created_at->format('H:i:s') }}
                                                                 </td>
@@ -136,6 +135,12 @@
                                                                             </svg>
                                                                         </span>
                                                                     @endif
+                                                                </td>
+                                                                <td class="px-4 py-2">
+                                                                    <a href="{{ route('admin.attendance.edit', ['entry' => $shift['entrada'], 'exit' => $shift['salida']]) }}"
+                                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">
+                                                                        Editar
+                                                                    </a>
                                                                 </td>
                                                             </tr>
                                                         @endforeach

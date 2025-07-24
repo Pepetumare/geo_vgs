@@ -26,7 +26,6 @@
                             <input type="hidden" name="longitude" id="longitude">
                             <input type="hidden" name="type" id="type" value="{{ $nextAction }}">
 
-                            {{-- El botón se muestra condicionalmente --}}
                             @if ($nextAction == 'entrada')
                                 <button type="button" id="action-btn"
                                     class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 ease-in-out w-full sm:w-auto">
@@ -60,52 +59,58 @@
                     <!-- Historial de Registros -->
                     <div class="mt-8">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mis Últimos Registros</h3>
-                        <div class="mt-4 border-t border-gray-200 dark:border-gray-700">
-                            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse ($attendances as $item)
-                                    <li class="p-4 flex items-center justify-between">
-                                        <div class="flex items-center">
-                                            @if ($item->type == 'entrada')
-                                                <span
-                                                    class="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
-                                                    <svg class="h-5 w-5 text-green-600 dark:text-green-400"
-                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                                    </svg>
-                                                </span>
-                                            @else
-                                                <span
-                                                    class="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mr-3">
-                                                    <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                                    </svg>
-                                                </span>
-                                            @endif
-                                            <div>
-                                                <strong
-                                                    class="text-gray-800 dark:text-gray-200">{{ ucfirst($item->type) }}</strong>
-                                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                                    {{ $item->created_at->format('d/m/Y H:i:s') }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 text-right">
-                                            <a href="https://www.google.com/maps?q={{ $item->latitude }},{{ $item->longitude }}"
-                                                target="_blank"
-                                                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
-                                                Ver en Mapa
-                                            </a>
-                                        </div>
-                                    </li>
-                                @empty
-                                    <li class="p-4 text-center text-gray-500 dark:text-gray-400">No tienes registros
-                                        aún.</li>
-                                @endforelse
-                            </ul>
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Tipo</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Fecha y Hora</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Ubicación</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    @forelse ($attendances as $item)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                @if ($item->type == 'entrada')
+                                                    <span
+                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Entrada</span>
+                                                @else
+                                                    <span
+                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Salida</span>
+                                                @endif
+                                            </td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                {{ $item->created_at->format('d/m/Y H:i:s') }}</td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                <a href="https://www.google.com/maps?q={{ $item->latitude }},{{ $item->longitude }}"
+                                                    target="_blank"
+                                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Ver
+                                                    en Mapa</a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3"
+                                                class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">
+                                                No tienes registros aún.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        <div class="mt-4">
+                            {{ $attendances->links() }}
                         </div>
                     </div>
 
@@ -116,6 +121,7 @@
 
     @push('scripts')
         <script>
+            // ... (El script de geolocalización no cambia)
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('attendance-form');
                 const latitudeInput = document.getElementById('latitude');
