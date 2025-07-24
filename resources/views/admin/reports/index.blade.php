@@ -111,10 +111,14 @@
                                                     <tbody>
                                                         @foreach ($shifts as $shift)
                                                             <tr class="border-b dark:border-gray-700">
+                                                                <!-- --- CAMBIO CLAVE AQUÍ --- -->
+                                                                <!-- Accedemos a la fecha a través de la propiedad 'created_at' -->
                                                                 <td class="px-4 py-2">
-                                                                    {{ $shift['entrada']->format('H:i:s') }}</td>
+                                                                    {{ $shift['entrada']->created_at->format('H:i:s') }}
+                                                                </td>
                                                                 <td class="px-4 py-2">
-                                                                    {{ $shift['salida']->format('H:i:s') }}</td>
+                                                                    {{ $shift['salida']->created_at->format('H:i:s') }}
+                                                                </td>
                                                                 <td class="px-4 py-2">
                                                                     {{ number_format($shift['duration_in_hours'], 2) }}
                                                                     hrs</td>
