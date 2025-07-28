@@ -13,24 +13,23 @@ class AttendanceController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // --- CAMBIO CLAVE AQUÍ ---
-        // Usamos paginate(4) en lugar de get() para obtener los registros.
         $attendances = $user->attendances()->orderBy('id', 'desc')->paginate(4);
-
         $lastAttendance = $user->attendances()->orderBy('id', 'desc')->first();
 
         $nextAction = 'entrada';
+        $clockInTime = null; // Variable para el cronómetro
 
         if ($lastAttendance) {
             if ($lastAttendance->type == 'entrada' && $lastAttendance->created_at->isToday()) {
                 $nextAction = 'salida';
+                $clockInTime = $lastAttendance->created_at; // Pasamos la hora de entrada a la vista
             }
         }
 
         return view('dashboard', [
             'attendances' => $attendances,
             'nextAction' => $nextAction,
+            'clockInTime' => $clockInTime, // Añadimos la variable a los datos de la vista
         ]);
     }
 

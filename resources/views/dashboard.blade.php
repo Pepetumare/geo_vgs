@@ -19,6 +19,18 @@
                                 Estás dentro. Presiona el botón para registrar tu salida.
                             @endif
                         </p>
+
+                        <!-- Cronómetro (se muestra solo si ha marcado entrada) -->
+                        @if ($nextAction == 'salida')
+                            <div class="mb-4 p-4 bg-blue-100 dark:bg-gray-700 rounded-lg text-center">
+                                <p class="text-sm text-blue-800 dark:text-blue-300">Tiempo transcurrido del turno actual:
+                                </p>
+                                <p id="timer"
+                                    class="text-3xl font-bold text-blue-900 dark:text-blue-200 tracking-wider">00:00:00
+                                </p>
+                            </div>
+                        @endif
+
                         <form id="attendance-form" action="{{ route('attendance.store') }}" method="POST"
                             class="space-y-4">
                             @csrf
@@ -121,7 +133,7 @@
 
     @push('scripts')
         <script>
-            // ... (El script de geolocalización no cambia)
+            // Script para el botón de marcaje
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('attendance-form');
                 const latitudeInput = document.getElementById('latitude');
@@ -162,6 +174,36 @@
                     });
                 }
             });
+
+            // Script para el cronómetro
+            @if ($clockInTime)
+                const clockInTime = new Date("{{ $clockInTime->toIso8601String() }}");
+                const timerElement = document.getElementById('timer');
+
+                function updateTimer() {
+                    const now = new Date();
+                    const diff = now - clockInTime; // Diferencia en milisegundos
+
+                    const hours = Math.floor(diff / 3600000);
+                    const minutes = Math.floor((diff % 3600000) / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+
+                    // Formatear con ceros a la izquierda
+                    const formattedHours = String(hours).padStart(2, '0');
+                    const formattedMinutes = String(minutes).padStart(2, '0');
+                    const formattedSeconds = String(seconds).padStart(2, '0');
+
+                    if (timerElement) {
+                        timerElement.textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+                    }
+                }
+
+                // Actualizar el cronómetro cada segundo
+                setInterval(updateTimer, 1000);
+
+                // Llamada inicial para que se muestre inmediatamente sin esperar 1 segundo
+                updateTimer();
+            @endif
         </script>
     @endpush
 </x-app-layout>
