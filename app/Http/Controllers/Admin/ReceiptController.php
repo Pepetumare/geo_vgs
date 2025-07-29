@@ -13,7 +13,6 @@ class ReceiptController extends Controller
      */
     public function create()
     {
-        // Obtenemos el último número correlativo para mostrarlo como referencia
         $lastCorrelative = Receipt::max('correlative_number') ?? 0;
         $nextCorrelative = $lastCorrelative + 1;
 
@@ -29,14 +28,15 @@ class ReceiptController extends Controller
             'client_name' => 'required|string|max:255',
             'client_rut' => 'nullable|string|max:20',
             'description' => 'required|string',
-            'net_amount' => 'required|integer|min:0',
+            'total_amount' => 'required|integer|min:0', // Ahora validamos el monto total
         ]);
 
-        $netAmount = $request->net_amount;
-        $ivaAmount = round($netAmount * 0.19); // IVA del 19% en Chile
-        $totalAmount = $netAmount + $ivaAmount;
+        // --- INICIO: LÓGICA DE CÁLCULO DE IVA INVERSO ---
+        $totalAmount = $request->total_amount;
+        $netAmount = round($totalAmount / 1.19);
+        $ivaAmount = $totalAmount - $netAmount;
+        // --- FIN: LÓGICA DE CÁLCULO ---
 
-        // Generar el número correlativo de forma segura
         $lastCorrelative = Receipt::max('correlative_number') ?? 0;
         $newCorrelative = $lastCorrelative + 1;
 
@@ -50,7 +50,6 @@ class ReceiptController extends Controller
             'total_amount' => $totalAmount,
         ]);
 
-        // Redirigir a la vista de impresión con el recibo recién creado
         return redirect()->route('admin.receipts.show', $receipt);
     }
 
@@ -60,5 +59,25 @@ class ReceiptController extends Controller
     public function show(Receipt $receipt)
     {
         return view('admin.receipts.thermal-template', ['receipt' => $receipt]);
+    }
+
+    /**
+     * Muestra el historial de boletas y permite buscar por RUT.
+     */
+    public function history(Request $request)
+    {
+        $receipts = collect();
+        $searchRut = $request->input('client_rut');
+
+        if ($searchRut) {
+            $receipts = Receipt::where('client_rut', $searchRut)
+                ->orderBy('correlative_number', 'desc')
+                ->get();
+        }
+
+        return view('admin.receipts.history', [
+            'receipts' => $receipts,
+            'searchRut' => $searchRut,
+        ]);
     }
 }
