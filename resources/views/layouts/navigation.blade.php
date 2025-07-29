@@ -24,6 +24,9 @@
                         <x-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')">
                             {{ __('Reportes') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.receipts.create')" :active="request()->routeIs('admin.receipts.create')">
+                            {{ __('Boletas') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -96,6 +99,9 @@
                 </x-responsive-nav-link>
                 <x-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')">
                     {{ __('Reportes') }}
+                </x-nav-link>
+                <x-nav-link :href="route('admin.receipts.create')" :active="request()->routeIs('admin.receipts.create')">
+                    {{ __('Boletas') }}
                 </x-nav-link>
             @endif
         </div>
