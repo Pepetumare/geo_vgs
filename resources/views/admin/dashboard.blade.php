@@ -3,6 +3,7 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Panel de Administración
         </h2>
+    </div>
     </x-slot>
 
     <div class="py-12">
@@ -10,17 +11,13 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
-                    <!-- --- INICIO: CÓDIGO AÑADIDO --- -->
-                    <!-- Bloque para mostrar mensajes de estado -->
                     @if (session('status'))
                         <div class="mb-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded relative"
                             role="alert">
                             {{ session('status') }}
                         </div>
                     @endif
-                    <!-- --- FIN: CÓDIGO AÑADIDO --- -->
-                    acciones
-                    <!-- Formulario de Filtros -->
+
                     <div class="mb-6">
                         <h3 class="text-lg font-medium">Filtrar Registros</h3>
                         <form action="{{ route('admin.dashboard') }}" method="GET"
