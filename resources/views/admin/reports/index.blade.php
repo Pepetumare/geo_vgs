@@ -6,7 +6,8 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        {{-- Inicializamos Alpine.js para el modal --}}
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="{ showModal: false, lat: 0, lng: 0 }">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
@@ -15,7 +16,6 @@
                         <h3 class="text-lg font-medium">Filtrar Reportes</h3>
                         <form action="{{ route('admin.reports') }}" method="GET"
                             class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                            <!-- Filtros de empleado y fecha -->
                             <div>
                                 <label for="user_id"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300">Empleado</label>
@@ -103,7 +103,9 @@
                                                     <thead class="bg-gray-50 dark:bg-gray-700">
                                                         <tr>
                                                             <th class="px-4 py-2 text-left font-medium">Entrada</th>
+                                                            <th class="px-4 py-2 text-left font-medium">Ubic.</th>
                                                             <th class="px-4 py-2 text-left font-medium">Salida</th>
+                                                            <th class="px-4 py-2 text-left font-medium">Ubic.</th>
                                                             <th class="px-4 py-2 text-left font-medium">Duración</th>
                                                             <th class="px-4 py-2 text-left font-medium">Alerta</th>
                                                             <th class="px-4 py-2 text-left font-medium">Acciones</th>
@@ -116,7 +118,17 @@
                                                                     {{ $shift['entrada']->created_at->format('H:i:s') }}
                                                                 </td>
                                                                 <td class="px-4 py-2">
+                                                                    <button type="button"
+                                                                        @click="showModal = true; lat = {{ $shift['entrada']->latitude }}; lng = {{ $shift['entrada']->longitude }}; $nextTick(() => initMap(lat, lng))"
+                                                                        class="text-indigo-600 hover:text-indigo-900 text-xs">Ver</button>
+                                                                </td>
+                                                                <td class="px-4 py-2">
                                                                     {{ $shift['salida']->created_at->format('H:i:s') }}
+                                                                </td>
+                                                                <td class="px-4 py-2">
+                                                                    <button type="button"
+                                                                        @click="showModal = true; lat = {{ $shift['salida']->latitude }}; lng = {{ $shift['salida']->longitude }}; $nextTick(() => initMap(lat, lng))"
+                                                                        class="text-indigo-600 hover:text-indigo-900 text-xs">Ver</button>
                                                                 </td>
                                                                 <td class="px-4 py-2">
                                                                     {{ number_format($shift['duration_in_hours'], 2) }}
@@ -126,19 +138,17 @@
                                                                         <span
                                                                             title="Posible simulación de GPS detectada.">
                                                                             <svg class="w-5 h-5 text-yellow-500"
-                                                                                fill="none" viewBox="0 0 24 24"
-                                                                                stroke="currentColor">
-                                                                                <path stroke-linecap="round"
-                                                                                    stroke-linejoin="round"
-                                                                                    stroke-width="2"
-                                                                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                                fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fill-rule="evenodd"
+                                                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                                                    clip-rule="evenodd" />
                                                                             </svg>
                                                                         </span>
                                                                     @endif
                                                                 </td>
                                                                 <td class="px-4 py-2">
                                                                     <a href="{{ route('admin.attendance.edit', ['entry' => $shift['entrada'], 'exit' => $shift['salida']]) }}"
-                                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">
+                                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 text-xs">
                                                                         Editar
                                                                     </a>
                                                                 </td>
@@ -158,13 +168,59 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal Map -->
+            <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                style="display: none;">
+                <div @click.away="showModal = false" x-show="showModal" x-transition
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 max-w-2xl w-full mx-4">
+                    <div class="flex justify-between items-center pb-3 border-b dark:border-gray-700">
+                        <p class="text-2xl font-bold dark:text-white">Ubicación del Registro</p>
+                        <button @click="showModal = false"
+                            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <div id="map" style="height: 400px; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Incluir Chart.js y script del gráfico -->
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
         <script>
+            let map = null;
+            let marker = null;
+
+            function initMap(lat, lng) {
+                if (map === null) {
+                    map = L.map('map').setView([lat, lng], 16);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+                    marker = L.marker([lat, lng]).addTo(map);
+                } else {
+                    map.setView([lat, lng], 16);
+                    marker.setLatLng([lat, lng]);
+                }
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 const ctx = document.getElementById('hoursChart');
                 if (ctx) {
