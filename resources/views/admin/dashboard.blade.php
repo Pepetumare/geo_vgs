@@ -3,7 +3,8 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Panel de Administración
         </h2>
-    </div>
+
+    
     </x-slot>
 
     <div class="py-12">
