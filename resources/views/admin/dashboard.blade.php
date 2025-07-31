@@ -19,7 +19,7 @@
                         </div>
                     @endif
                     <!-- --- FIN: CÓDIGO AÑADIDO --- -->
-
+                    acciones
                     <!-- Formulario de Filtros -->
                     <div class="mb-6">
                         <h3 class="text-lg font-medium">Filtrar Registros</h3>
@@ -94,6 +94,9 @@
                                                             Fecha y Hora</th>
                                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase">
                                                             Acciones</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium ...">Alerta
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody
@@ -115,6 +118,16 @@
                                                                 <a href="{{ route('admin.attendance.editSingle', $item) }}"
                                                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Editar</a>
                                                             </td>
+                                                            @if ($item->is_suspicious)
+                                                                <span title="Posible simulación de GPS detectada.">
+                                                                    <svg class="w-6 h-6 text-yellow-500" fill="none"
+                                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                                    </svg>
+                                                                </span>
+                                                            @endif
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
