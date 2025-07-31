@@ -12,6 +12,26 @@ class AttendanceController extends Controller
     /**
      * Muestra el formulario para editar un turno (entrada y salida).
      */
+    public function editSingle(Attendance $attendance)
+    {
+        return view('admin.attendances.edit-single', ['attendance' => $attendance]);
+    }
+
+    public function updateSingle(Request $request, Attendance $attendance)
+    {
+        $request->validate([
+            'timestamp' => 'required|date',
+        ]);
+
+        $newTimestamp = Carbon::parse($request->timestamp);
+
+        $attendance->created_at = $newTimestamp;
+        
+        $attendance->save();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Registro actualizado con éxito.');
+    }
+
     public function edit(Attendance $entry, Attendance $exit)
     {
         // Pasamos los dos registros (entrada y salida) a la vista de edición.

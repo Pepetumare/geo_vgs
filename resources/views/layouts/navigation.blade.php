@@ -27,6 +27,9 @@
                         <x-nav-link :href="route('admin.receipts.create')" :active="request()->routeIs('admin.receipts.create')">
                             {{ __('Boletas') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Usuarios') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -102,6 +105,9 @@
                 </x-nav-link>
                 <x-nav-link :href="route('admin.receipts.create')" :active="request()->routeIs('admin.receipts.create')">
                     {{ __('Boletas') }}
+                </x-nav-link>
+                <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Usuarios') }}
                 </x-nav-link>
             @endif
         </div>

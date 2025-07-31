@@ -1,11 +1,19 @@
 <?php
 
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\ReceiptController; // <-- Asegúrate de que apunte a la carpeta Admin
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
     return view('welcome');
@@ -15,6 +23,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [AttendanceController::class, 'index'])->name('dashboard');
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -22,16 +31,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // --- Rutas del Panel de Administración ---
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard de Asistencia
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    
+    // Reportes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
     
-    // Rutas para Boletas de Venta
+    // Boletas de Venta
     Route::get('/receipts/create', [ReceiptController::class, 'create'])->name('receipts.create');
     Route::post('/receipts', [ReceiptController::class, 'store'])->name('receipts.store');
     Route::get('/receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
-    
-    // --- RUTA DEL HISTORIAL (VERIFICAR ESTA LÍNEA) ---
     Route::get('/receipts-history', [ReceiptController::class, 'history'])->name('receipts.history');
+
+    // Gestión de Usuarios
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+
+    
+    // Rutas para editar turnos completos (entrada y salida)
+    Route::get('/attendance/{entry}/{exit}/edit', [AdminAttendanceController::class, 'edit'])->name('attendance.edit');
+    Route::put('/attendance/{entry}/{exit}', [AdminAttendanceController::class, 'update'])->name('attendance.update');
+
+    // --- NUEVAS RUTAS PARA EDITAR UN REGISTRO INDIVIDUAL ---
+    Route::get('/attendance/{attendance}/edit-single', [AdminAttendanceController::class, 'editSingle'])->name('attendance.editSingle');
+    Route::put('/attendance/{attendance}', [AdminAttendanceController::class, 'updateSingle'])->name('attendance.updateSingle');
 });
 
 
