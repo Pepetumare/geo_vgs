@@ -4,7 +4,7 @@
             Panel de Administración
         </h2>
 
-    
+
     </x-slot>
 
     <div class="py-12">
@@ -86,15 +86,18 @@
                                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                                     <tr>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                        <th
+                                                            class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
                                                             Tipo</th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                        <th
+                                                            class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
                                                             Fecha y Hora</th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                        <th
+                                                            class="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
                                                             Acciones</th>
-                                                        <th scope="col"
-                                                            class="px-6 py-3 text-left text-xs font-medium ...">Alerta
-                                                        </th>
+                                                        <th
+                                                            class="px-6 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+                                                            Alerta</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody
@@ -110,22 +113,28 @@
                                                                         class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Salida</span>
                                                                 @endif
                                                             </td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                                {{ $item->created_at->format('d/m/Y H:i:s') }}</td>
+                                                            <td
+                                                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                                {{ $item->created_at->format('d/m/Y H:i:s') }}
+                                                            </td>
                                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                                 <a href="{{ route('admin.attendance.editSingle', $item) }}"
                                                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Editar</a>
                                                             </td>
-                                                            @if ($item->is_suspicious)
-                                                                <span title="Posible simulación de GPS detectada.">
-                                                                    <svg class="w-6 h-6 text-yellow-500" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                                    </svg>
-                                                                </span>
-                                                            @endif
+
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                                @if ($item->is_suspicious)
+                                                                    <span title="Posible simulación de GPS detectada."
+                                                                        class="inline-flex items-center">
+                                                                        <svg class="w-6 h-6 text-yellow-500"
+                                                                            fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fill-rule="evenodd"
+                                                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                                                clip-rule="evenodd" />
+                                                                        </svg>
+                                                                    </span>
+                                                                @endif
+                                                            </td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
