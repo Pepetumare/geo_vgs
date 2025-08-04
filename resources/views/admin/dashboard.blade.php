@@ -3,6 +3,10 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Panel de Administración
         </h2>
+        <a href="{{ route('admin.attendance.createSingle') }}"
+            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500">
+            Añadir Registro Manual
+        </a>
     </x-slot>
 
     <div class="py-12">

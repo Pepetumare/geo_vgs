@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -69,4 +70,42 @@ class AttendanceController extends Controller
 
         return redirect()->route('admin.reports')->with('status', 'Turno actualizado con éxito.');
     }
+
+    public function createSingle()
+    {
+        $users = User::where('role', 'user')->orderBy('name')->get();
+        return view('admin.attendances.create-single', ['users' => $users]);
+    }
+
+    /**
+     * Guarda un nuevo registro de asistencia manual en la base de datos.
+     */
+    public function storeSingle(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'type' => 'required|in:entrada,salida',
+            'timestamp' => 'required|date',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $timestamp = Carbon::parse($request->timestamp);
+
+        // --- CORRECCIÓN CLAVE AQUÍ ---
+        // Creamos el registro manualmente para asegurar el control sobre la fecha.
+        $attendance = new Attendance();
+        $attendance->user_id = $request->user_id;
+        $attendance->type = $request->type;
+        $attendance->latitude = $request->latitude;
+        $attendance->longitude = $request->longitude;
+        $attendance->created_at = $timestamp;
+        $attendance->updated_at = $timestamp;
+        $attendance->is_suspicious = false;
+        $attendance->ip_address = 'manual';
+        $attendance->save();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Registro manual añadido con éxito.');
+    }
+
 }
