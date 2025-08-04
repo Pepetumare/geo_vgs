@@ -73,7 +73,7 @@ class AttendanceController extends Controller
 
     public function createSingle()
     {
-        $users = User::where('role', 'user')->orderBy('name')->get();
+        $users = User::orderBy('name')->get();
         return view('admin.attendances.create-single', ['users' => $users]);
     }
 
