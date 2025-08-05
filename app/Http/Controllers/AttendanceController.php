@@ -6,7 +6,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http; // <-- Importante: Añadir el cliente HTTP
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
@@ -48,36 +48,28 @@ class AttendanceController extends Controller
         $isSuspicious = false;
 
         if ($request->type == 'entrada') {
-            // 1. Verificación de Geocerca (GPS vs Oficina)
+            // Verificación de Geocerca y Anti-Spoofing
             $companyLatitude = Config::get('company.location.latitude');
             $companyLongitude = Config::get('company.location.longitude');
             $allowedRadius = Config::get('company.radius_meters');
-
             $distanceFromCompany = $this->calculateDistance($request->latitude, $request->longitude, $companyLatitude, $companyLongitude);
-
             if ($distanceFromCompany > $allowedRadius) {
                 return redirect()->route('dashboard')->with('error', 'Estás demasiado lejos para registrar tu ENTRADA.');
             }
-
-            // 2. Verificación Anti-Spoofing (GPS vs IP)
             $ip = $request->ip();
-            // Para pruebas en local: $ip = '190.114.255.255'; // IP de ejemplo de Chile
             $response = Http::get("http://ip-api.com/json/{$ip}?fields=status,lat,lon");
-
             if ($response->successful() && $response->json('status') === 'success') {
                 $ipLat = $response->json('lat');
                 $ipLon = $response->json('lon');
                 $distanceBetweenGpsAndIp = $this->calculateDistance($request->latitude, $request->longitude, $ipLat, $ipLon);
-
-                if ($distanceBetweenGpsAndIp > 100000) { // 100 km en metros
+                if ($distanceBetweenGpsAndIp > 100000) {
                     $isSuspicious = true;
                 }
             }
 
             // Lógica de auto-corrección
             if ($lastAttendance && $lastAttendance->type == 'entrada' && !$lastAttendance->created_at->isToday()) {
-                $forgottenCheckoutTime = $lastAttendance->created_at->copy()->setTime(18, 0, 0);
-
+                $forgottenCheckoutTime = $lastAttendance->created_at->copy()->setTime(18, 30, 0);
                 $forgottenAttendance = new Attendance();
                 $forgottenAttendance->user_id = $user->id;
                 $forgottenAttendance->type = 'salida';
@@ -86,7 +78,6 @@ class AttendanceController extends Controller
                 $forgottenAttendance->created_at = $forgottenCheckoutTime;
                 $forgottenAttendance->updated_at = $forgottenCheckoutTime;
                 $forgottenAttendance->save();
-
                 $successMessage = 'Turno anterior cerrado automáticamente. ¡Nueva entrada registrada con éxito!';
             }
         }
@@ -96,20 +87,25 @@ class AttendanceController extends Controller
             return redirect()->route('dashboard')->with('error', 'Ya has realizado un marcaje de ' . $request->type . ' hoy.');
         }
 
-        $attendanceData = [
-            'type' => $request->type,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'ip_address' => $request->ip(),
-            'is_suspicious' => $isSuspicious,
-        ];
+        $newAttendance = new Attendance();
+        $newAttendance->user_id = $user->id;
+        $newAttendance->type = $request->type;
+        $newAttendance->latitude = $request->latitude;
+        $newAttendance->longitude = $request->longitude;
+        $newAttendance->ip_address = $request->ip();
+        $newAttendance->is_suspicious = $isSuspicious;
+
+        // Lógica de ajuste de hora para salidas tardías
+        // NOTA PARA PRUEBAS: Cambia el 20 por la hora actual (ej. 11) para probar.
         if ($request->type == 'salida' && now()->hour >= 20) {
-            $timestamp = now()->setHour(18)->setMinute(0)->setSecond(0);
-            $attendanceData['created_at'] = $timestamp;
-            $attendanceData['updated_at'] = $timestamp;
+            $timestamp = now()->setHour(18)->setMinute(30)->setSecond(0);
+            $newAttendance->created_at = $timestamp;
+            $newAttendance->updated_at = $timestamp;
         }
 
-        $user->attendances()->create($attendanceData);
+        // Guardamos el nuevo registro. Este método es más explícito y fiable.
+        $newAttendance->save();
+
         return redirect()->route('dashboard')->with('status', $successMessage);
     }
 
