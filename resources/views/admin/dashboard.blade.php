@@ -70,80 +70,113 @@
                     <div class="mt-4 space-y-2">
                         @forelse ($users as $user)
                             @if ($user->attendances->isNotEmpty())
-                                <div x-data="{ open: false }"
+                                <!-- Contenedor principal de Alpine.js para cada usuario -->
+                                <div x-data="calendar({{ $user->id }})"
                                     class="border border-gray-200 dark:border-gray-700 rounded-lg">
-                                    <button @click="open = !open"
+
+                                    <!-- Botón para expandir/contraer el acordeón -->
+                                    <button @click="open = !open; showCalendar = false"
                                         class="w-full flex items-center justify-between p-4 text-left">
                                         <span
                                             class="font-medium text-gray-900 dark:text-white">{{ $user->name }}</span>
                                         <svg class="w-5 h-5 text-gray-500 transform transition-transform"
-                                            :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
+                                            :class="{ 'rotate-180': open || showCalendar }" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <div x-show="open" x-transition
+
+                                    <!-- Contenido expandible (Tabla O Calendario) -->
+                                    <div x-show="open || showCalendar" x-transition x-cloak
                                         class="p-4 border-t border-gray-200 dark:border-gray-700">
-                                        <div class="overflow-x-auto">
-                                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                                    <tr>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
-                                                            Tipo</th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
-                                                            Fecha y Hora</th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
-                                                            Ubicación</th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">
-                                                            Acciones</th>
-                                                        <th class="px-6 py-3 text-center text-xs font-medium uppercase">
-                                                            Alerta</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody
-                                                    class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                                    @foreach ($user->attendances as $item)
+
+                                        <!-- Botón para alternar entre Tabla y Calendario -->
+                                        <div class="mb-4">
+                                            <button
+                                                @click="showCalendar = !showCalendar; open = !showCalendar; if(showCalendar) { fetchCalendarData() }"
+                                                class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors">
+                                                <span
+                                                    x-text="showCalendar ? 'Ver Tabla de Registros' : 'Ver Calendario'"></span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Vista de TABLA de Registros -->
+                                        <div x-show="open && !showCalendar">
+                                            <div class="overflow-x-auto">
+                                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                    <thead class="bg-gray-50 dark:bg-gray-700">
                                                         <tr>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                                @if ($item->type == 'entrada')
-                                                                    <span
-                                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Entrada</span>
-                                                                @else
-                                                                    <span
-                                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Salida</span>
-                                                                @endif
-                                                            </td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                                {{ $item->created_at->format('d/m/Y H:i:s') }}</td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                                <button type="button"
-                                                                    @click="showModal = true; lat = {{ $item->latitude }}; lng = {{ $item->longitude }}; $nextTick(() => initMap(lat, lng))"
-                                                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">
-                                                                    Ver en Mapa
-                                                                </button>
-                                                            </td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                                <a href="{{ route('admin.attendance.editSingle', $item) }}"
-                                                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Editar</a>
-                                                            </td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                                                @if ($item->is_suspicious)
-                                                                    <span title="Posible simulación de GPS detectada."
-                                                                        class="inline-flex items-center">
-                                                                        <svg class="w-6 h-6 text-yellow-500"
-                                                                            fill="currentColor" viewBox="0 0 20 20">
-                                                                            <path fill-rule="evenodd"
-                                                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                                                                clip-rule="evenodd" />
-                                                                        </svg>
-                                                                    </span>
-                                                                @endif
-                                                            </td>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                                Tipo</th>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                                Fecha y Hora</th>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                                Ubicación</th>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium uppercase">
+                                                                Acciones</th>
+                                                            <th
+                                                                class="px-6 py-3 text-center text-xs font-medium uppercase">
+                                                                Alerta</th>
                                                         </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
+                                                    </thead>
+                                                    <tbody
+                                                        class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                                        @foreach ($user->attendances as $item)
+                                                            <tr>
+                                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                                    @if ($item->type == 'entrada')
+                                                                        <span
+                                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Entrada</span>
+                                                                    @else
+                                                                        <span
+                                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Salida</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                                    {{ $item->created_at->format('d/m/Y H:i:s') }}</td>
+                                                                <td
+                                                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                                    <button type="button"
+                                                                        @click="showModal = true; lat = {{ $item->latitude }}; lng = {{ $item->longitude }}; $nextTick(() => initMap(lat, lng))"
+                                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">
+                                                                        Ver en Mapa
+                                                                    </button>
+                                                                </td>
+                                                                <td
+                                                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                                    <a href="{{ route('admin.attendance.editSingle', $item) }}"
+                                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Editar</a>
+                                                                </td>
+                                                                <td
+                                                                    class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                                    @if ($item->is_suspicious)
+                                                                        <span
+                                                                            title="Posible simulación de GPS detectada."
+                                                                            class="inline-flex items-center">
+                                                                            <svg class="w-6 h-6 text-yellow-500"
+                                                                                fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fill-rule="evenodd"
+                                                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                                                    clip-rule="evenodd" />
+                                                                            </svg>
+                                                                        </span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Vista de CALENDARIO -->
+                                        <div x-show="showCalendar" id="calendar-container-{{ $user->id }}">
+                                            <!-- El calendario se generará aquí con JavaScript -->
                                         </div>
                                     </div>
                                 </div>
@@ -190,6 +223,7 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
         <script>
+            // Lógica del Mapa (existente)
             let map = null;
             let marker = null;
 
@@ -206,6 +240,98 @@
                 }
                 setTimeout(() => map.invalidateSize(), 100);
             }
+
+            // Lógica del Calendario (nueva)
+            function calendarRenderer(containerId, year, month, data, alpineComponent) {
+                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre",
+                    "Octubre", "Noviembre", "Diciembre"
+                ];
+                const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const firstDay = new Date(year, month - 1, 1).getDay();
+                const daysInMonth = new Date(year, month, 0).getDate();
+
+                const statusClasses = {
+                    'asistencia': 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100',
+                    'inasistencia': 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100',
+                    'feriado': 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100',
+                    'weekend': 'bg-gray-100 dark:bg-gray-700 opacity-60'
+                };
+
+                // Usamos el contexto de Alpine para los clics de los botones
+                let html = `
+                    <div class="flex items-center justify-between mb-4">
+                        <button onclick="document.getElementById('${containerId}')._x_dataStack[0].changeMonth(-1)" class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md">&lt; Ant</button>
+                        <h3 class="text-lg font-semibold">${monthNames[month - 1]} ${year}</h3>
+                        <button onclick="document.getElementById('${containerId}')._x_dataStack[0].changeMonth(1)" class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md">Sig &gt;</button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 text-center">
+                `;
+
+                daysOfWeek.forEach(day => {
+                    html += `<div class="font-bold text-xs p-2">${day}</div>`;
+                });
+
+                for (let i = 0; i < firstDay; i++) {
+                    html += '<div></div>';
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dayStatus = data[dateStr] || '';
+                    const dayOfWeek = new Date(year, month - 1, day).getDay();
+                    let dayClass = (dayOfWeek === 0 || dayOfWeek === 6) && !dayStatus ? statusClasses['weekend'] : (
+                        statusClasses[dayStatus] || 'bg-gray-50 dark:bg-gray-700');
+
+                    html += `<div class="p-2 rounded-lg h-16 flex flex-col justify-center items-center text-sm ${dayClass}">
+                                <span class="font-bold">${day}</span>
+                                <span class="text-xs capitalize mt-1">${dayStatus.replace('_', ' ')}</span>
+                             </div>`;
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            document.addEventListener('alpine:initializing', () => {
+                Alpine.data('calendar', (userId) => ({
+                    open: false,
+                    showCalendar: false,
+                    calendarData: {},
+                    currentDate: new Date(),
+                    fetchCalendarData() {
+                        const year = this.currentDate.getFullYear();
+                        const month = this.currentDate.getMonth() + 1;
+                        fetch(`/admin/calendar-data/${userId}/${year}/${month}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                this.calendarData = data;
+                                this.renderCalendar();
+                            }).catch(err => console.error('Error fetching calendar data:', err));
+                    },
+                    renderCalendar() {
+                        const year = this.currentDate.getFullYear();
+                        const month = this.currentDate.getMonth() + 1;
+                        calendarRenderer(`calendar-container-${userId}`, year, month, this.calendarData,
+                            this);
+                    },
+                    changeMonth(offset) {
+                        const newDate = new Date(this.currentDate);
+                        newDate.setDate(1); // Evitar errores con meses de distinta longitud
+                        newDate.setMonth(newDate.getMonth() + offset);
+                        this.currentDate = newDate;
+                        this.fetchCalendarData();
+                    }
+                }));
+            });
         </script>
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
     @endpush
 </x-app-layout>

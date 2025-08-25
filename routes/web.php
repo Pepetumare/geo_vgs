@@ -9,12 +9,6 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::get('/', function () {
     return view('welcome');
 });
@@ -34,6 +28,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Dashboard de Asistencia
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     
+    // --- RUTA PARA LOS DATOS DEL CALENDARIO (API) ---
+    Route::get('/calendar-data/{user}/{year}/{month}', [AdminController::class, 'getCalendarData'])->name('calendar.data');
+    
     // Reportes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
     
@@ -50,7 +47,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-
 
     
     // Rutas para editar turnos completos (entrada y salida)

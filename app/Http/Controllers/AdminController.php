@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Holiday;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
 {
@@ -38,5 +40,51 @@ class AdminController extends Controller
             'allUsers' => $allUsers,
             'filters' => $request->only(['user_id', 'start_date', 'end_date']), // Pasamos los filtros a la vista
         ]);
+    }
+
+    public function getCalendarData(User $user, $year, $month)
+    {
+        // Validar que el mes y año sean correctos
+        if ($month < 1 || $month > 12) {
+            return response()->json(['error' => 'Mes inválido'], 400);
+        }
+
+        $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        // 1. Obtener los días en que el usuario SÍ trabajó (asistencia)
+        $attendances = $user->attendances()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->created_at->format('Y-m-d');
+            });
+
+        // 2. Obtener los feriados del mes
+        $holidays = Holiday::whereBetween('date', [$startDate, $endDate])
+            ->get()
+            ->keyBy(function ($item) {
+                return Carbon::parse($item->date)->format('Y-m-d');
+            });
+
+        $calendarData = [];
+
+        // 3. Recorrer cada día del mes para determinar su estado
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $currentDateStr = $date->format('Y-m-d');
+            $dayOfWeek = $date->dayOfWeek; // Domingo = 0, Sábado = 6
+
+            if (isset($holidays[$currentDateStr])) {
+                $calendarData[$currentDateStr] = 'feriado';
+            } elseif (isset($attendances[$currentDateStr])) {
+                $calendarData[$currentDateStr] = 'asistencia';
+            } elseif ($dayOfWeek !== 0 && $dayOfWeek !== 6) { 
+                // Si no es feriado, no hay asistencia y NO es fin de semana, es inasistencia.
+                $calendarData[$currentDateStr] = 'inasistencia';
+            }
+            // Los fines de semana sin registro simplemente se omiten (no son 'inasistencia')
+        }
+
+        return response()->json($calendarData);
     }
 }
