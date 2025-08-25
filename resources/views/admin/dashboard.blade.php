@@ -26,6 +26,7 @@
                         <h3 class="text-lg font-medium">Filtrar Registros</h3>
                         <form action="{{ route('admin.dashboard') }}" method="GET"
                             class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            {{-- ... tu formulario de filtros (sin cambios) ... --}}
                             <div>
                                 <label for="user_id"
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300">Empleado</label>
@@ -70,11 +71,9 @@
                     <div class="mt-4 space-y-2">
                         @forelse ($users as $user)
                             @if ($user->attendances->isNotEmpty())
-                                <!-- Contenedor principal de Alpine.js para cada usuario -->
                                 <div x-data="calendar({{ $user->id }})"
                                     class="border border-gray-200 dark:border-gray-700 rounded-lg">
 
-                                    <!-- Botón para expandir/contraer el acordeón -->
                                     <button @click="open = !open; showCalendar = false"
                                         class="w-full flex items-center justify-between p-4 text-left">
                                         <span
@@ -87,11 +86,9 @@
                                         </svg>
                                     </button>
 
-                                    <!-- Contenido expandible (Tabla O Calendario) -->
                                     <div x-show="open || showCalendar" x-transition x-cloak
                                         class="p-4 border-t border-gray-200 dark:border-gray-700">
 
-                                        <!-- Botón para alternar entre Tabla y Calendario -->
                                         <div class="mb-4">
                                             <button
                                                 @click="showCalendar = !showCalendar; open = !showCalendar; if(showCalendar) { fetchCalendarData() }"
@@ -103,6 +100,7 @@
 
                                         <!-- Vista de TABLA de Registros -->
                                         <div x-show="open && !showCalendar">
+                                            {{-- ... tu tabla de registros (sin cambios) ... --}}
                                             <div class="overflow-x-auto">
                                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -174,9 +172,24 @@
                                             </div>
                                         </div>
 
-                                        <!-- Vista de CALENDARIO -->
-                                        <div x-show="showCalendar" id="calendar-container-{{ $user->id }}">
-                                            <!-- El calendario se generará aquí con JavaScript -->
+                                        <!-- CAMBIO: Vista de CALENDARIO. Ahora la navegación está aquí. -->
+                                        <div x-show="showCalendar">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <button @click="changeMonth(-1)"
+                                                    class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">&lt;
+                                                    Ant</button>
+                                                <h3 class="text-lg font-semibold capitalize"
+                                                    x-text="currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })">
+                                                </h3>
+                                                <button @click="changeMonth(1)"
+                                                    class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Sig
+                                                    &gt;</button>
+                                            </div>
+                                            <!-- CAMBIO: El contenedor de la cuadrícula ahora está separado. -->
+                                            <div :id="`calendar-grid-{{ $user->id }}`"
+                                                class="grid grid-cols-7 gap-2 text-center">
+                                                <!-- La cuadrícula del calendario se generará aquí -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -189,12 +202,13 @@
                 </div>
             </div>
 
-            <!-- Modal del Mapa -->
+            <!-- Modal del Mapa (sin cambios) -->
             <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
                 style="display: none;">
+                {{-- ... contenido del modal (sin cambios) ... --}}
                 <div @click.away="showModal = false" x-show="showModal" x-transition
                     class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 max-w-2xl w-full mx-4">
                     <div class="flex justify-between items-center pb-3 border-b dark:border-gray-700">
@@ -223,7 +237,7 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
         <script>
-            // Lógica del Mapa (existente)
+            // Lógica del Mapa (sin cambios)
             let map = null;
             let marker = null;
 
@@ -241,13 +255,9 @@
                 setTimeout(() => map.invalidateSize(), 100);
             }
 
-            // Lógica del Calendario (nueva)
-            function calendarRenderer(containerId, year, month, data, alpineComponent) {
-                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre",
-                    "Octubre", "Noviembre", "Diciembre"
-                ];
+            // CAMBIO: La función calendarRenderer ahora solo dibuja la cuadrícula de días.
+            function calendarRenderer(containerId, year, month, data) {
                 const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-
                 const container = document.getElementById(containerId);
                 if (!container) return;
 
@@ -261,15 +271,7 @@
                     'weekend': 'bg-gray-100 dark:bg-gray-700 opacity-60'
                 };
 
-                // Usamos el contexto de Alpine para los clics de los botones
-                let html = `
-                    <div class="flex items-center justify-between mb-4">
-                        <button onclick="document.getElementById('${containerId}')._x_dataStack[0].changeMonth(-1)" class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md">&lt; Ant</button>
-                        <h3 class="text-lg font-semibold">${monthNames[month - 1]} ${year}</h3>
-                        <button onclick="document.getElementById('${containerId}')._x_dataStack[0].changeMonth(1)" class="px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-md">Sig &gt;</button>
-                    </div>
-                    <div class="grid grid-cols-7 gap-2 text-center">
-                `;
+                let html = ''; // Empezamos con un string vacío
 
                 daysOfWeek.forEach(day => {
                     html += `<div class="font-bold text-xs p-2">${day}</div>`;
@@ -292,7 +294,6 @@
                              </div>`;
                 }
 
-                html += '</div>';
                 container.innerHTML = html;
             }
 
@@ -315,12 +316,12 @@
                     renderCalendar() {
                         const year = this.currentDate.getFullYear();
                         const month = this.currentDate.getMonth() + 1;
-                        calendarRenderer(`calendar-container-${userId}`, year, month, this.calendarData,
-                            this);
+                        // CAMBIO: Apunta al nuevo contenedor de la cuadrícula
+                        calendarRenderer(`calendar-grid-${userId}`, year, month, this.calendarData);
                     },
                     changeMonth(offset) {
                         const newDate = new Date(this.currentDate);
-                        newDate.setDate(1); // Evitar errores con meses de distinta longitud
+                        newDate.setDate(1);
                         newDate.setMonth(newDate.getMonth() + offset);
                         this.currentDate = newDate;
                         this.fetchCalendarData();
