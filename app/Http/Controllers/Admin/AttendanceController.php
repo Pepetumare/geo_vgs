@@ -118,4 +118,14 @@ class AttendanceController extends Controller
 
         return redirect()->route('admin.reports')->with('status', 'Turno actualizado con éxito.');
     }
+
+    public function destroySingle(Attendance $attendance)
+    {
+        // Usamos el modelo que Laravel nos inyecta gracias a la ruta
+        $attendance->delete();
+
+        // Redirigimos al usuario de vuelta al panel con un mensaje de éxito
+        return redirect()->route('admin.dashboard')
+            ->with('status', 'Registro eliminado exitosamente.');
+    }
 }

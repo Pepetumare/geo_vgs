@@ -56,6 +56,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // --- NUEVAS RUTAS PARA EDITAR UN REGISTRO INDIVIDUAL ---
     Route::get('/attendance/{attendance}/edit-single', [AdminAttendanceController::class, 'editSingle'])->name('attendance.editSingle');
     Route::put('/attendance/{attendance}', [AdminAttendanceController::class, 'updateSingle'])->name('attendance.updateSingle');
+    Route::delete('/attendance/{attendance}', [AdminAttendanceController::class, 'destroySingle'])->name('attendance.destroySingle');
 
     // --- RUTAS REGISTRO MANUAL ---
     Route::get('/attendance/create-single', [AdminAttendanceController::class, 'createSingle'])->name('attendance.createSingle');

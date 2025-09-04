@@ -147,8 +147,23 @@
                                                                 </td>
                                                                 <td
                                                                     class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                                    <a href="{{ route('admin.attendance.editSingle', $item) }}"
-                                                                        class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Editar</a>
+                                                                    <div class="flex items-center space-x-4">
+                                                                        <a href="{{ route('admin.attendance.editSingle', $item) }}"
+                                                                            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Editar</a>
+
+                                                                        <!-- Formulario de Eliminación -->
+                                                                        <form
+                                                                            action="{{ route('admin.attendance.destroySingle', $item) }}"
+                                                                            method="POST"
+                                                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.');">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit"
+                                                                                class="text-red-600 hover:text-red-900 dark:text-red-400">
+                                                                                Eliminar
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
                                                                 </td>
                                                                 <td
                                                                     class="px-6 py-4 whitespace-nowrap text-sm text-center">
