@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Overtime; // Se importa el modelo Overtime
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -15,6 +16,13 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
         $attendances = $user->attendances()->orderBy('id', 'desc')->paginate(4);
+
+        // --- CAMBIO: Obtener solo las últimas 5 solicitudes, sin paginación ---
+        $overtimeRequests = $user->overtimes()->orderBy('date', 'desc')->take(5)->get();
+
+        // --- NUEVO: Calcular el total de horas extras aprobadas ---
+        $totalOvertimeHours = $user->overtimes()->where('status', 'approved')->sum('hours');
+
         $lastAttendance = $user->attendances()->orderBy('id', 'desc')->first();
 
         $nextAction = 'entrada';
@@ -29,6 +37,8 @@ class AttendanceController extends Controller
 
         return view('dashboard', [
             'attendances' => $attendances,
+            'overtimeRequests' => $overtimeRequests,
+            'totalOvertimeHours' => $totalOvertimeHours, // <-- Se pasa la nueva variable a la vista
             'nextAction' => $nextAction,
             'clockInTime' => $clockInTime,
         ]);
@@ -96,14 +106,12 @@ class AttendanceController extends Controller
         $newAttendance->is_suspicious = $isSuspicious;
 
         // Lógica de ajuste de hora para salidas tardías
-        // NOTA PARA PRUEBAS: Cambia el 20 por la hora actual (ej. 11) para probar.
         if ($request->type == 'salida' && now()->hour >= 20) {
             $timestamp = now()->setHour(18)->setMinute(30)->setSecond(0);
             $newAttendance->created_at = $timestamp;
             $newAttendance->updated_at = $timestamp;
         }
 
-        // Guardamos el nuevo registro. Este método es más explícito y fiable.
         $newAttendance->save();
 
         return redirect()->route('dashboard')->with('status', $successMessage);
@@ -122,3 +130,4 @@ class AttendanceController extends Controller
         return $angle * $earthRadius;
     }
 }
+

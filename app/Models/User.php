@@ -51,4 +51,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function overtimes()
+    {
+        return $this->hasMany(Overtime::class);
+    }
 }
