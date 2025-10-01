@@ -11,40 +11,51 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-medium">Nuevo Registro de Asistencia</h3>
 
-                    <form action="{{ route('admin.attendance.storeSingle') }}" method="POST" class="mt-6 space-y-6">
+                    <form action="{{ route('admin.attendance.storeSingle') }}" method="POST" class="mt-6 space-y-6"
+                        novalidate>
                         @csrf
 
-                        <!-- Selección de Empleado y Tipo -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="user_id" class="block text-sm font-medium">Empleado</label>
                                 <select name="user_id" id="user_id"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm"
-                                    required>
+                                    required aria-required="true">
                                     @foreach ($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        <option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>
+                                            {{ $user->name }}</option>
                                     @endforeach
                                 </select>
+                                @error('user_id')
+                                    <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
+                                @enderror
                             </div>
+
                             <div>
                                 <label for="type" class="block text-sm font-medium">Tipo de Marcaje</label>
                                 <select name="type" id="type"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm"
-                                    required>
-                                    <option value="entrada">Entrada</option>
-                                    <option value="salida">Salida</option>
+                                    required aria-required="true">
+                                    <option value="entrada" @selected(old('type') === 'entrada')>Entrada</option>
+                                    <option value="salida" @selected(old('type') === 'salida')>Salida</option>
                                 </select>
+                                @error('type')
+                                    <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
-                        <!-- Fecha y Hora -->
                         <div>
                             <label for="timestamp" class="block text-sm font-medium">Fecha y Hora del Registro</label>
                             <input type="datetime-local" name="timestamp" id="timestamp"
-                                value="{{ now()->format('Y-m-d\TH:i') }}"
+                                value="{{ old('timestamp', now()->timezone(config('app.timezone'))->format('Y-m-d\TH:i')) }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 shadow-sm"
-                                required>
+                                required aria-required="true">
+                            @error('timestamp')
+                                <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
+                            @enderror
                         </div>
+
 
                         <!-- Mapa Interactivo -->
                         <div>
@@ -77,6 +88,11 @@
                             <a href="{{ route('admin.dashboard') }}"
                                 class="text-sm text-gray-600 dark:text-gray-400 hover:underline">Cancelar</a>
                         </div>
+
+                        <a href="{{ route('admin.attendance.createMultiple') }}"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500">
+                            Marcación múltiple
+                        </a>
                     </form>
                 </div>
             </div>

@@ -21,7 +21,9 @@ class Attendance extends Model
         'latitude',
         'longitude',
         'ip_address',
-        'is_suspicious'
+        'is_suspicious',
+        'created_at',   
+        'updated_at',
     ];
 
     /**

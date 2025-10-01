@@ -7,13 +7,13 @@ use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB; // <-- Importante para transacciones
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
     /**
-     * Muestra el formulario para crear un nuevo registro de asistencia manual.
+     * Formulario para crear un nuevo registro manual (1 solo).
      */
     public function createSingle()
     {
@@ -23,51 +23,128 @@ class AttendanceController extends Controller
             'lng' => Config::get('company.location.longitude'),
         ];
 
-        return view('admin.attendances.create-single', [
-            'users' => $users,
-            'companyLocation' => $companyLocation,
-        ]);
+        return view('admin.attendances.create-single', compact('users', 'companyLocation'));
     }
 
     /**
-     * Guarda un nuevo registro de asistencia manual en la base de datos.
+     * Guarda un nuevo registro manual (1 solo).
      */
     public function storeSingle(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'type' => 'required|in:entrada,salida',
+            'user_id'   => 'required|exists:users,id',
+            'type'      => 'required|in:entrada,salida',
             'timestamp' => 'required|date',
-            'latitude' => 'required|numeric',
+            'latitude'  => 'required|numeric',
             'longitude' => 'required|numeric',
         ]);
 
         $timestamp = Carbon::parse($request->timestamp);
 
-        $attendance = new Attendance();
-        $attendance->user_id = $request->user_id;
-        $attendance->type = $request->type;
-        $attendance->latitude = $request->latitude;
-        $attendance->longitude = $request->longitude;
-        $attendance->created_at = $timestamp;
-        $attendance->updated_at = $timestamp;
-        $attendance->is_suspicious = false;
-        $attendance->ip_address = 'manual';
-        $attendance->save();
+        Attendance::create([
+            'user_id'      => $request->user_id,
+            'type'         => $request->type,
+            'latitude'     => $request->latitude,
+            'longitude'    => $request->longitude,
+            'created_at'   => $timestamp,
+            'updated_at'   => $timestamp,
+            'is_suspicious' => false,
+            'ip_address'   => 'manual',
+        ]);
 
-        return redirect()->route('admin.dashboard')->with('status', 'Registro manual añadido con éxito.');
+        return redirect()->route('admin.dashboard')
+            ->with('status', 'Registro manual añadido con éxito.');
     }
 
     /**
-     * Muestra el formulario para editar un único registro de asistencia.
+     * Formulario para crear múltiples registros (N días).
+     */
+    public function createMultiple()
+    {
+        $users = User::orderBy('name')->get();
+        $companyLocation = [
+            'lat' => Config::get('company.location.latitude'),
+            'lng' => Config::get('company.location.longitude'),
+        ];
+
+        return view('admin.attendances.create-multiple', compact('users', 'companyLocation'));
+    }
+
+    /**
+     * Guarda múltiples registros (N días).
+     */
+    public function storeMultiple(Request $request)
+    {
+        $request->validate([
+            'user_id'           => ['required', 'exists:users,id'],
+            'days'              => ['required', 'array', 'min:1'],
+            'days.*.date'       => ['required', 'date'],
+            'days.*.entry_time' => ['required', 'date_format:H:i'],
+            'days.*.exit_time'  => ['required', 'date_format:H:i'],
+        ]);
+
+        $latitude  = config('company.location.latitude');
+        $longitude = config('company.location.longitude');
+
+        try {
+            DB::transaction(function () use ($request, $latitude, $longitude) {
+                foreach ($request->input('days', []) as $day) {
+                    // Validación de negocio: salida > entrada (por día)
+                    $entryTimestamp = \Carbon\Carbon::createFromFormat('Y-m-d H:i', "{$day['date']} {$day['entry_time']}");
+                    $exitTimestamp  = \Carbon\Carbon::createFromFormat('Y-m-d H:i', "{$day['date']} {$day['exit_time']}");
+
+                    if ($exitTimestamp->lessThanOrEqualTo($entryTimestamp)) {
+                        throw new \RuntimeException("La salida debe ser posterior a la entrada para el día {$day['date']}.");
+                    }
+
+                    // Entrada
+                    \App\Models\Attendance::create([
+                        'user_id'      => $request->user_id,
+                        'type'         => 'entrada',
+                        'latitude'     => $latitude,
+                        'longitude'    => $longitude,
+                        'created_at'   => $entryTimestamp,
+                        'updated_at'   => $entryTimestamp,
+                        'is_suspicious' => false,
+                        'ip_address'   => 'manual',
+                    ]);
+
+                    // Salida
+                    \App\Models\Attendance::create([
+                        'user_id'      => $request->user_id,
+                        'type'         => 'salida',
+                        'latitude'     => $latitude,
+                        'longitude'    => $longitude,
+                        'created_at'   => $exitTimestamp,
+                        'updated_at'   => $exitTimestamp,
+                        'is_suspicious' => false,
+                        'ip_address'   => 'manual',
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            return back()
+                ->withInput()
+                ->withErrors(['general' => 'No se pudieron guardar todos los registros: ' . $e->getMessage()]);
+        }
+
+        return redirect()->route('admin.dashboard')
+            ->with('status', 'Registros múltiples añadidos con éxito.');
+    }
+
+
+
+    /**
+     * Formulario para editar un registro único.
      */
     public function editSingle(Attendance $attendance)
     {
-        return view('admin.attendances.edit-single', ['attendance' => $attendance]);
+        return view('admin.attendances.edit-single', compact('attendance'));
     }
 
     /**
-     * Actualiza un único registro de asistencia.
+     * Actualiza un registro único.
      */
     public function updateSingle(Request $request, Attendance $attendance)
     {
@@ -75,38 +152,35 @@ class AttendanceController extends Controller
         $newTimestamp = Carbon::parse($request->timestamp);
 
         $attendance->created_at = $newTimestamp;
+        $attendance->updated_at = now();
         $attendance->save();
 
-        return redirect()->route('admin.dashboard')->with('status', 'Registro actualizado con éxito.');
+        return redirect()->route('admin.dashboard')
+            ->with('status', 'Registro actualizado con éxito.');
     }
 
     /**
-     * Muestra el formulario para editar un turno completo (entrada y salida).
+     * Formulario para editar un turno (entrada y salida).
      */
     public function edit(Attendance $entry, Attendance $exit)
     {
-        return view('admin.attendances.edit', [
-            'entry' => $entry,
-            'exit' => $exit,
-        ]);
+        return view('admin.attendances.edit', compact('entry', 'exit'));
     }
 
     /**
-     * Actualiza los registros de un turno en la base de datos.
+     * Actualiza los registros de un turno.
      */
     public function update(Request $request, Attendance $entry, Attendance $exit)
     {
         $request->validate([
             'entry_time' => 'required|date',
-            'exit_time' => 'required|date|after:entry_time',
+            'exit_time'  => 'required|date|after:entry_time',
         ]);
 
-        // --- CORRECCIÓN CLAVE Y MEJORA DE ROBUSTEZ ---
         DB::transaction(function () use ($request, $entry, $exit) {
             $newEntryTime = Carbon::parse($request->entry_time);
-            $newExitTime = Carbon::parse($request->exit_time);
+            $newExitTime  = Carbon::parse($request->exit_time);
 
-            // Usamos el método explícito para asegurar que los cambios se guarden
             $entry->created_at = $newEntryTime;
             $entry->updated_at = now();
             $entry->save();
@@ -116,15 +190,17 @@ class AttendanceController extends Controller
             $exit->save();
         });
 
-        return redirect()->route('admin.reports')->with('status', 'Turno actualizado con éxito.');
+        return redirect()->route('admin.reports')
+            ->with('status', 'Turno actualizado con éxito.');
     }
 
+    /**
+     * Elimina un registro único.
+     */
     public function destroySingle(Attendance $attendance)
     {
-        // Usamos el modelo que Laravel nos inyecta gracias a la ruta
         $attendance->delete();
 
-        // Redirigimos al usuario de vuelta al panel con un mensaje de éxito
         return redirect()->route('admin.dashboard')
             ->with('status', 'Registro eliminado exitosamente.');
     }

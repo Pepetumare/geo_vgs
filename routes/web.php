@@ -62,6 +62,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/attendance/{attendance}', [AdminAttendanceController::class, 'updateSingle'])->name('attendance.updateSingle');
     Route::delete('/attendance/{attendance}', [AdminAttendanceController::class, 'destroySingle'])->name('attendance.destroySingle');
 
+    // -- RUTAS PARA MARCACIÓN MÚLTIPLE
+
+    Route::get('/attendance/multiple', [AdminAttendanceController::class, 'createMultiple'])->name('attendance.createMultiple');
+    // Marcación múltiple
+    Route::post('/attendance/multiple', [AdminAttendanceController::class, 'storeMultiple'])->name('attendance.storeMultiple');
+
+
     // --- RUTAS REGISTRO MANUAL ---
     Route::get('/attendance/create-single', [AdminAttendanceController::class, 'createSingle'])->name('attendance.createSingle');
     Route::post('/attendance', [AdminAttendanceController::class, 'storeSingle'])->name('attendance.storeSingle');
