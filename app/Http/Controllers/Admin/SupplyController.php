@@ -5,14 +5,46 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use App\Models\Supply;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class SupplyController extends Controller
 {
-    /**
-     * Store a newly created supply in storage.
-     */
+    public function search(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'q' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $search = trim((string) ($validated['q'] ?? ''));
+
+        $supplies = Supply::query()
+            ->select(['id', 'name', 'unit', 'unit_price', 'stock', 'provider_id'])
+            ->with('provider:id,name')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get()
+            ->map(fn (Supply $supply) => [
+                'id' => $supply->id,
+                'name' => $supply->name,
+                'unit' => $supply->unit,
+                'unit_price' => $supply->unit_price,
+                'stock' => $supply->stock,
+                'provider' => [
+                    'id' => $supply->provider?->id,
+                    'name' => $supply->provider?->name,
+                ],
+            ]);
+
+        return response()->json([
+            'data' => $supplies,
+        ]);
+    }
+
     public function store(Request $request, Provider $provider): RedirectResponse
     {
         $validated = $request->validate([

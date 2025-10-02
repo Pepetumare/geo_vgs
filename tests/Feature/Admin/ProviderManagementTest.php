@@ -55,4 +55,39 @@ class ProviderManagementTest extends TestCase
             'stock' => 10,
         ]);
     }
+
+    public function test_admin_can_search_supplies_by_name(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $provider = Provider::factory()->create(['name' => 'Proveedor Lima']);
+        $provider->supplies()->create([
+            'name' => 'Resma tamaño oficio',
+            'description' => '500 hojas color blanco',
+            'unit' => 'Paquete',
+            'unit_price' => 30.5,
+            'stock' => 15,
+        ]);
+
+        $provider->supplies()->create([
+            'name' => 'Tinta para impresora',
+            'description' => 'Cartucho negro',
+            'unit' => 'Unidad',
+            'unit_price' => 80,
+            'stock' => 4,
+        ]);
+
+        $response = $this->actingAs($admin)->getJson(route('admin.supplies.search', ['q' => 'resma']));
+
+        $response->assertOk();
+
+        $response->assertJson(fn ($json) => $json
+            ->has('data', fn ($json) => $json
+                ->first(fn ($json) => $json
+                    ->where('name', 'Resma tamaño oficio')
+                    ->where('provider.name', 'Proveedor Lima')
+                    ->etc()
+                )
+            )
+        );
+    }
 }

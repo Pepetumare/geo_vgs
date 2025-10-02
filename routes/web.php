@@ -47,6 +47,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/receipts-history', [ReceiptController::class, 'history'])->name('receipts.history');
 
     // Proveedores e Insumos
+    Route::get('/supplies/search', [SupplyController::class, 'search'])->name('supplies.search');
     Route::resource('providers', ProviderController::class);
     Route::post('/providers/{provider}/supplies', [SupplyController::class, 'store'])->name('providers.supplies.store');
     Route::delete('/providers/{provider}/supplies/{supply}', [SupplyController::class, 'destroy'])->name('providers.supplies.destroy');
