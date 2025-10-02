@@ -55,7 +55,7 @@
                             @endif
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Insumos registrados</p>
-                                <p>{{ $provider->supplies->count() }}</p>
+                                <p>{{ $provider->supplies_count }}</p>
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Insumos registrados</h3>
-                    @if ($provider->supplies->isEmpty())
+                    @if ($supplies->isEmpty())
                         <p class="text-sm text-gray-500">No hay insumos registrados para este proveedor.</p>
                     @else
                         <div class="overflow-x-auto">
@@ -147,7 +147,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    @foreach ($provider->supplies as $supply)
+                                    @foreach ($supplies as $supply)
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                                 <div>{{ $supply->name }}</div>
@@ -180,6 +180,11 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            @if ($supplies->hasPages())
+                                <div class="mt-4">
+                                    {{ $supplies->withQueryString()->links() }}
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>
