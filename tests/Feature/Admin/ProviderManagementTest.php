@@ -81,10 +81,51 @@ class ProviderManagementTest extends TestCase
         $response->assertOk();
 
         $response->assertJson(fn ($json) => $json
+            ->where('meta.total', 1)
+            ->has('data', 1)
             ->has('data', fn ($json) => $json
                 ->first(fn ($json) => $json
                     ->where('name', 'Resma tamaño oficio')
                     ->where('provider.name', 'Proveedor Lima')
+                    ->etc()
+                )
+            )
+        );
+    }
+
+    public function test_supply_search_is_paginated_to_five_results_per_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $provider = Provider::factory()->create();
+
+        foreach (range(1, 6) as $index) {
+            $provider->supplies()->create([
+                'name' => "Insumo {$index}",
+                'description' => null,
+                'unit' => 'Unidad',
+                'unit_price' => $index * 10,
+                'stock' => $index,
+            ]);
+        }
+
+        $responsePageOne = $this->actingAs($admin)->getJson(route('admin.supplies.search'));
+
+        $responsePageOne->assertOk();
+        $responsePageOne->assertJsonPath('meta.per_page', 5);
+        $responsePageOne->assertJsonPath('meta.total', 6);
+        $responsePageOne->assertJsonPath('meta.current_page', 1);
+        $responsePageOne->assertJsonCount(5, 'data');
+
+        $responsePageTwo = $this->actingAs($admin)->getJson(route('admin.supplies.search', ['page' => 2]));
+
+        $responsePageTwo->assertOk();
+        $responsePageTwo->assertJsonPath('meta.current_page', 2);
+        $responsePageTwo->assertJsonPath('meta.total', 6);
+        $responsePageTwo->assertJsonCount(1, 'data');
+        $responsePageTwo->assertJson(fn ($json) => $json
+            ->has('data', fn ($json) => $json
+                ->first(fn ($json) => $json
+                    ->where('name', 'Insumo 6')
                     ->etc()
                 )
             )
