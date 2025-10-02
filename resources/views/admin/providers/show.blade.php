@@ -136,7 +136,7 @@
                                             Unidad
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Precio unitario
+                                            Precio unitario Sin IVA
                                         </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Stock
@@ -159,7 +159,7 @@
                                                 {{ $supply->unit ?? '—' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                S/ {{ number_format($supply->unit_price, 2) }}
+                                                CLP/ {{ number_format($supply->unit_price, 2) }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                                 {{ $supply->stock }}

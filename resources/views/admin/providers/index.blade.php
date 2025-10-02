@@ -26,16 +26,20 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Nombre
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Contacto
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Insumos
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Acciones
                                     </th>
                                 </tr>
@@ -43,13 +47,16 @@
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($providers as $provider)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             {{ $provider->name }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                             {{ $provider->contact_name ?? '—' }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                             {{ $provider->supplies_count }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
@@ -65,7 +72,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                                        <td colspan="4"
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
                                             No hay proveedores registrados.
                                         </td>
                                     </tr>
@@ -81,19 +89,21 @@
             </div>
         </div>
     </div>
-<div class="py-6">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <h3 class="text-lg font-semibold">Insumos disponibles</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Busca rápidamente un insumo y conoce a qué proveedor pertenece.</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Busca rápidamente un insumo y conoce a
+                                qué proveedor pertenece.</p>
                         </div>
                     </div>
 
                     <div class="mt-6">
-                        <label for="supply-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Buscar insumo</label>
+                        <label for="supply-search"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Buscar insumo</label>
                         <div class="mt-1 relative">
                             <input id="supply-search" type="text" placeholder="Escribe el nombre del insumo"
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700"
@@ -101,30 +111,41 @@
                         </div>
                     </div>
 
-                    <p id="supply-status" class="mt-4 text-sm text-gray-500 dark:text-gray-400">Escribe para buscar un insumo.</p>
+                    <p id="supply-status" class="mt-4 text-sm text-gray-500 dark:text-gray-400">Escribe para buscar un
+                        insumo.</p>
 
                     <div class="mt-4 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Insumo
                                     </th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Proveedor
                                     </th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Unidad
                                     </th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Precio Unitario
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Precio Unitario Sin IVA
                                     </th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Precio Unitario Con IVA
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Stock
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="supply-results" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody id="supply-results"
+                                class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             </tbody>
                         </table>
                     </div>
@@ -133,125 +154,160 @@
         </div>
     </div>
 
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('supply-search');
-            const resultsBody = document.getElementById('supply-results');
-            const statusText = document.getElementById('supply-status');
-            const searchUrl = searchInput.dataset.searchUrl;
-            let debounceTimer;
-            let activeRequest;
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const searchInput = document.getElementById('supply-search');
+                const resultsBody = document.getElementById('supply-results');
+                const statusText = document.getElementById('supply-status');
+                const searchUrl = searchInput?.dataset?.searchUrl;
+                let debounceTimer;
+                let activeRequest;
 
-            const renderRows = (supplies) => {
-                resultsBody.innerHTML = '';
-
-                if (!supplies.length) {
-                    const row = document.createElement('tr');
-                    const cell = document.createElement('td');
-                    cell.colSpan = 5;
-                    cell.className = 'px-4 py-4 text-sm text-center text-gray-500 dark:text-gray-400';
-                    cell.textContent = 'No se encontraron insumos para la búsqueda realizada.';
-                    row.appendChild(cell);
-                    resultsBody.appendChild(row);
+                // Validaciones mínimas
+                if (!searchUrl) {
+                    console.error('Falta data-search-url en #supply-search');
+                    if (statusText) {
+                        statusText.classList.add('text-red-500');
+                        statusText.textContent = 'No se configuró la URL de búsqueda.';
+                    }
                     return;
                 }
 
-                supplies.forEach((supply) => {
-                    const row = document.createElement('tr');
-
-                    const nameCell = document.createElement('td');
-                    nameCell.className = 'px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white';
-                    nameCell.textContent = supply.name;
-
-                    const providerCell = document.createElement('td');
-                    providerCell.className = 'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
-                    providerCell.textContent = supply.provider?.name ?? '—';
-
-                    const unitCell = document.createElement('td');
-                    unitCell.className = 'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
-                    unitCell.textContent = supply.unit ?? '—';
-
-                    const priceCell = document.createElement('td');
-                    priceCell.className = 'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
-                    priceCell.textContent = supply.unit_price !== null ? new Intl.NumberFormat('es-PE', {
-                        style: 'currency',
-                        currency: 'PEN'
-                    }).format(Number(supply.unit_price)) : '—';
-
-                    const stockCell = document.createElement('td');
-                    stockCell.className = 'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
-                    stockCell.textContent = supply.stock ?? '—';
-
-                    row.appendChild(nameCell);
-                    row.appendChild(providerCell);
-                    row.appendChild(unitCell);
-                    row.appendChild(priceCell);
-                    row.appendChild(stockCell);
-
-                    resultsBody.appendChild(row);
+                // Utilidades
+                const fmtCLP = new Intl.NumberFormat('es-CL', {
+                    style: 'currency',
+                    currency: 'CLP'
                 });
-            };
+                const toNumber = (v) => {
+                    if (v === null || v === undefined) return NaN;
+                    const n = typeof v === 'string' ? Number(v) : v;
+                    return Number.isFinite(n) ? n : NaN;
+                };
 
-            const fetchSupplies = (query = '') => {
-                if (activeRequest) {
-                    activeRequest.abort();
-                }
+                const setStatus = (msg, isError = false) => {
+                    statusText.classList.toggle('text-red-500', isError);
+                    statusText.classList.toggle('text-gray-500', !isError);
+                    statusText.classList.toggle('dark:text-gray-400', !isError);
+                    statusText.textContent = msg;
+                };
 
-                activeRequest = new AbortController();
+                const renderRows = (supplies) => {
+                    resultsBody.innerHTML = '';
 
-                const params = new URLSearchParams();
-                if (query) {
-                    params.set('q', query);
-                }
+                    if (!Array.isArray(supplies) || supplies.length === 0) {
+                        const row = document.createElement('tr');
+                        const cell = document.createElement('td');
+                        cell.colSpan = 6; // 6 columnas: nombre, proveedor, unidad, precio neto, precio c/IVA, stock
+                        cell.className = 'px-4 py-4 text-sm text-center text-gray-500 dark:text-gray-400';
+                        cell.textContent = 'No se encontraron insumos para la búsqueda realizada.';
+                        row.appendChild(cell);
+                        resultsBody.appendChild(row);
+                        return;
+                    }
 
-                statusText.classList.remove('text-red-500');
-                statusText.classList.add('text-gray-500', 'dark:text-gray-400');
-                statusText.textContent = 'Buscando insumos...';
+                    supplies.forEach((supply) => {
+                        const row = document.createElement('tr');
 
-                const url = params.toString() ? `${searchUrl}?${params.toString()}` : searchUrl;
+                        const nameCell = document.createElement('td');
+                        nameCell.className =
+                            'px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white';
+                        nameCell.textContent = supply?.name ?? '—';
 
-                fetch(url, {
-                        signal: activeRequest.signal
-                    })
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error('No se pudo obtener la información de los insumos.');
-                        }
+                        const providerCell = document.createElement('td');
+                        providerCell.className =
+                            'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                        providerCell.textContent = supply?.provider?.name ?? '—';
 
-                        return response.json();
-                    })
-                    .then((data) => {
-                        renderRows(data.data ?? []);
-                        if (!searchInput.value.trim()) {
-                            statusText.textContent = 'Mostrando los primeros insumos registrados.';
-                        } else {
-                            statusText.textContent = `Resultados para "${searchInput.value.trim()}".`;
-                        }
-                    })
-                    .catch((error) => {
-                        if (error.name === 'AbortError') {
-                            return;
-                        }
+                        const unitCell = document.createElement('td');
+                        unitCell.className =
+                            'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                        unitCell.textContent = supply?.unit ?? '—';
 
-                        statusText.classList.remove('text-gray-500', 'dark:text-gray-400');
-                        statusText.classList.add('text-red-500');
-                        statusText.textContent = 'Ocurrió un error al cargar los insumos.';
-                        console.error(error);
+                        // Precio neto (sin IVA)
+                        const priceCell = document.createElement('td');
+                        priceCell.className =
+                            'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                        const net = toNumber(supply?.unit_price);
+                        priceCell.textContent = Number.isFinite(net) ? fmtCLP.format(net) : '—';
+
+                        // Precio con IVA (19%) = neto * 1.19
+                        const priceCellCI = document.createElement('td');
+                        priceCellCI.className =
+                            'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                        const gross = Number.isFinite(net) ? net * 1.19 : NaN;
+                        priceCellCI.textContent = Number.isFinite(gross) ? fmtCLP.format(gross) : '—';
+
+                        const stockCell = document.createElement('td');
+                        stockCell.className =
+                            'px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                        stockCell.textContent = supply?.stock ?? '—';
+
+                        row.appendChild(nameCell);
+                        row.appendChild(providerCell);
+                        row.appendChild(unitCell);
+                        row.appendChild(priceCell);
+                        row.appendChild(priceCellCI);
+                        row.appendChild(stockCell);
+
+                        resultsBody.appendChild(row);
                     });
-            };
+                };
 
-            const handleInput = () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    fetchSupplies(searchInput.value.trim());
-                }, 300);
-            };
+                const fetchSupplies = (query = '') => {
+                    // Cancela la request anterior si sigue activa
+                    if (activeRequest) activeRequest.abort();
+                    activeRequest = new AbortController();
 
-            searchInput.addEventListener('input', handleInput);
+                    const params = new URLSearchParams();
+                    if (query) params.set('q', query);
 
-            fetchSupplies();
-        });
-    </script>
-@endpush
+                    setStatus('Buscando insumos...');
+
+                    const url = params.toString() ? `${searchUrl}?${params.toString()}` : searchUrl;
+
+                    fetch(url, {
+                            signal: activeRequest.signal
+                        })
+                        .then((response) => {
+                            if (!response.ok) throw new Error(
+                                'No se pudo obtener la información de los insumos.');
+                            return response.json();
+                        })
+                        .then((data) => {
+                            // Acepta { data: [...] } o array directo
+                            const items = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data :
+                                []);
+                            renderRows(items);
+                            if (!searchInput.value.trim()) {
+                                setStatus('Mostrando los primeros insumos registrados.');
+                            } else {
+                                setStatus(`Resultados para "${searchInput.value.trim()}".`);
+                            }
+                        })
+                        .catch((error) => {
+                            if (error.name === 'AbortError') return; // request cancelada
+                            console.error(error);
+                            setStatus('Ocurrió un error al cargar los insumos.', true);
+                        });
+                };
+
+                const handleInput = () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        fetchSupplies(searchInput.value.trim());
+                    }, 300);
+                };
+
+                // Accesibilidad recomendada
+                statusText.setAttribute('role', 'status');
+                statusText.setAttribute('aria-live', 'polite');
+
+                searchInput.addEventListener('input', handleInput);
+
+                // Carga inicial
+                fetchSupplies();
+            });
+        </script>
+    @endpush
 </x-app-layout>
