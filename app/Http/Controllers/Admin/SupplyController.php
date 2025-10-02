@@ -11,9 +11,6 @@ use Illuminate\Http\Request;
 
 class SupplyController extends Controller
 {
-    /**
-     * Display a filtered list of supplies for the admin search widget.
-     */
     public function search(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -48,9 +45,6 @@ class SupplyController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created supply in storage.
-     */
     public function store(Request $request, Provider $provider): RedirectResponse
     {
         $validated = $request->validate([
