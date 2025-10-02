@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\ProviderController;
 use App\Http\Controllers\Admin\ReceiptController;
+use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AttendanceController;
@@ -43,6 +45,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/receipts', [ReceiptController::class, 'store'])->name('receipts.store');
     Route::get('/receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
     Route::get('/receipts-history', [ReceiptController::class, 'history'])->name('receipts.history');
+
+    // Proveedores e Insumos
+    Route::get('/supplies/search', [SupplyController::class, 'search'])->name('supplies.search');
+    Route::resource('providers', ProviderController::class);
+    Route::post('/providers/{provider}/supplies', [SupplyController::class, 'store'])->name('providers.supplies.store');
+    Route::delete('/providers/{provider}/supplies/{supply}', [SupplyController::class, 'destroy'])->name('providers.supplies.destroy');
 
     // Gestión de Usuarios
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

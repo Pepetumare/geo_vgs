@@ -30,6 +30,9 @@
                         <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                             {{ __('Usuarios') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.providers.index')" :active="request()->routeIs('admin.providers.*')">
+                            {{ __('Proveedores') }}
+                        </x-nav-link>
                         {{-- ENLACE AÑADIDO --}}
                         <x-nav-link :href="route('admin.overtime.requests')" :active="request()->routeIs('admin.overtime.requests')">
                             {{ __('Gestionar Horas Extras') }}
@@ -112,6 +115,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                     {{ __('Usuarios') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.providers.index')" :active="request()->routeIs('admin.providers.*')">
+                    {{ __('Proveedores') }}
                 </x-responsive-nav-link>
                 {{-- ENLACE AÑADIDO (Móvil) --}}
                 <x-responsive-nav-link :href="route('admin.overtime.requests')" :active="request()->routeIs('admin.overtime.requests')">
