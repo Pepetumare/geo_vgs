@@ -26,9 +26,9 @@ class SupplyController extends Controller
                 $query->where('name', 'like', '%' . $search . '%');
             })
             ->orderBy('name')
-            ->limit(20)
-            ->get()
-            ->map(fn (Supply $supply) => [
+            ->paginate(5)
+            ->withQueryString()
+            ->through(fn (Supply $supply) => [
                 'id' => $supply->id,
                 'name' => $supply->name,
                 'unit' => $supply->unit,
@@ -40,9 +40,7 @@ class SupplyController extends Controller
                 ],
             ]);
 
-        return response()->json([
-            'data' => $supplies,
-        ]);
+        return response()->json($supplies);
     }
 
     public function store(Request $request, Provider $provider): RedirectResponse

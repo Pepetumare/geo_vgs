@@ -149,6 +149,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div id="supply-pagination" class="mt-4 flex justify-center"></div>
                 </div>
             </div>
         </div>
@@ -160,9 +161,11 @@
                 const searchInput = document.getElementById('supply-search');
                 const resultsBody = document.getElementById('supply-results');
                 const statusText = document.getElementById('supply-status');
+                const paginationContainer = document.getElementById('supply-pagination');
                 const searchUrl = searchInput?.dataset?.searchUrl;
                 let debounceTimer;
                 let activeRequest;
+                let currentQuery = '';
 
                 // Validaciones mínimas
                 if (!searchUrl) {
@@ -254,13 +257,99 @@
                     });
                 };
 
-                const fetchSupplies = (query = '') => {
+                const renderPagination = (payload) => {
+                    if (!paginationContainer) {
+                        return;
+                    }
+
+                    paginationContainer.innerHTML = '';
+
+                    const links = Array.isArray(payload?.links) ? payload.links : [];
+
+                    if (links.length <= 3) {
+                        paginationContainer.classList.add('hidden');
+                        return;
+                    }
+
+                    paginationContainer.classList.remove('hidden');
+
+                    const nav = document.createElement('nav');
+                    nav.className = 'inline-flex -space-x-px rounded-md shadow-sm';
+                    nav.setAttribute('aria-label', 'Paginación de insumos');
+
+                    links.forEach((link) => {
+                        const isDisabled = !link.url;
+                        const isActive = Boolean(link.active);
+                        const element = document.createElement(isDisabled ? 'span' : 'button');
+                        element.className = [
+                            'relative inline-flex items-center px-3 py-2 border text-sm font-medium focus:outline-none focus:z-20',
+                            isActive
+                                ? 'z-10 border-indigo-500 bg-indigo-50 text-indigo-600 dark:border-indigo-400 dark:bg-indigo-900/40 dark:text-indigo-100'
+                                : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
+                            isDisabled && !isActive
+                                ? 'cursor-default text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-900'
+                                : ''
+                        ].join(' ');
+
+                        const tmp = document.createElement('span');
+                        tmp.innerHTML = link.label ?? '';
+                        let label = tmp.textContent || tmp.innerText || '';
+                        const normalized = label.trim().toLowerCase();
+                        if (normalized.includes('previous')) {
+                            label = 'Anterior';
+                        } else if (normalized.includes('next')) {
+                            label = 'Siguiente';
+                        }
+                        element.textContent = label;
+
+                        if (!isDisabled) {
+                            element.type = 'button';
+                            element.addEventListener('click', () => {
+                                try {
+                                    const url = new URL(link.url, window.location.origin);
+                                    const nextPage = Number(url.searchParams.get('page')) || 1;
+                                    fetchSupplies(currentQuery, nextPage);
+                                } catch (error) {
+                                    console.error('No se pudo navegar a la página solicitada.', error);
+                                }
+                            });
+                        }
+
+                        nav.appendChild(element);
+                    });
+
+                    paginationContainer.appendChild(nav);
+                };
+
+                const updateStatus = (meta, query) => {
+                    if (!meta) {
+                        setStatus('Mostrando los primeros insumos registrados.');
+                        return;
+                    }
+
+                    if ((meta.total ?? 0) === 0) {
+                        setStatus('No se encontraron insumos para la búsqueda realizada.');
+                        return;
+                    }
+
+                    const from = meta.from ?? 1;
+                    const to = meta.to ?? meta.per_page ?? 5;
+                    const total = meta.total ?? to;
+                    const baseMessage = query
+                        ? `Resultados para "${query}".`
+                        : 'Mostrando los insumos registrados.';
+
+                    setStatus(`${baseMessage} Mostrando ${from}-${to} de ${total} insumos.`);
+                };
+
+                const fetchSupplies = (query = '', page = 1) => {
                     // Cancela la request anterior si sigue activa
                     if (activeRequest) activeRequest.abort();
                     activeRequest = new AbortController();
 
                     const params = new URLSearchParams();
                     if (query) params.set('q', query);
+                    if (Number.isFinite(page) && page > 1) params.set('page', page);
 
                     setStatus('Buscando insumos...');
 
@@ -275,18 +364,19 @@
                             return response.json();
                         })
                         .then((data) => {
-                            // Acepta { data: [...] } o array directo
+                            currentQuery = query;
                             const items = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data :
                                 []);
                             renderRows(items);
-                            if (!searchInput.value.trim()) {
-                                setStatus('Mostrando los primeros insumos registrados.');
-                            } else {
-                                setStatus(`Resultados para "${searchInput.value.trim()}".`);
-                            }
+                            renderPagination(data);
+                            updateStatus(data?.meta, query);
                         })
                         .catch((error) => {
                             if (error.name === 'AbortError') return; // request cancelada
+                            if (paginationContainer) {
+                                paginationContainer.innerHTML = '';
+                                paginationContainer.classList.add('hidden');
+                            }
                             console.error(error);
                             setStatus('Ocurrió un error al cargar los insumos.', true);
                         });
@@ -295,7 +385,7 @@
                 const handleInput = () => {
                     clearTimeout(debounceTimer);
                     debounceTimer = setTimeout(() => {
-                        fetchSupplies(searchInput.value.trim());
+                        fetchSupplies(searchInput.value.trim(), 1);
                     }, 300);
                 };
 

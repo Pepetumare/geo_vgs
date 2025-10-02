@@ -57,9 +57,13 @@ class ProviderController extends Controller
      */
     public function show(Provider $provider): View
     {
-        $provider->load(['supplies' => fn ($query) => $query->orderBy('name')]);
+        $provider->loadCount('supplies');
 
-        return view('admin.providers.show', compact('provider'));
+        $supplies = $provider->supplies()
+            ->orderBy('name')
+            ->paginate(5);
+
+        return view('admin.providers.show', compact('provider', 'supplies'));
     }
 
     /**
