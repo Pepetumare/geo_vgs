@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+//use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,7 @@ class ReportsController extends Controller
         $reportData = $this->buildReportData($filters);
 
         $chartLabels = json_encode(array_column($reportData, 'user_name'));
+
         $chartData = json_encode(array_map(fn ($hours) => round($hours, 2), array_column($reportData, 'total_hours')));
         $totalHours = array_reduce($reportData, fn ($carry, $item) => $carry + $item['total_hours'], 0);
 
@@ -34,6 +36,7 @@ class ReportsController extends Controller
     {
         $filters = $this->resolveFilters($request);
         $reportData = $this->buildReportData($filters);
+
         $totalHours = array_reduce($reportData, fn ($carry, $item) => $carry + $item['total_hours'], 0);
         $generatedAt = Carbon::now();
 
@@ -43,6 +46,40 @@ class ReportsController extends Controller
             'totalHours' => $totalHours,
             'generatedAt' => $generatedAt,
         ])->setPaper('a4', 'portrait');
+
+        $fileName = sprintf(
+            'reporte_asistencias_%s_%s.pdf',
+            Carbon::parse($filters['start_date'])->format('Ymd'),
+            Carbon::parse($filters['end_date'])->format('Ymd')
+        );
+
+        return $pdf->download($fileName);
+    }
+
+    private function resolveFilters(Request $request): array
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if (!$startDate) {
+            $startDate = Carbon::now()->startOfMonth()->toDateString();
+        }
+
+        if (!$endDate) {
+            $endDate = Carbon::now()->endOfMonth()->toDateString();
+        }
+
+        $totalHours = array_reduce($reportData, fn($carry, $item) => $carry + $item['total_hours'], 0);
+        $generatedAt = Carbon::now();
+
+        $pdf = app('dompdf.wrapper')  // ← COMPATIBLE CON TODAS LAS VERSIONES
+            ->loadView('admin.reports.pdf', [
+                'reportData' => $reportData,
+                'filters' => $filters,
+                'totalHours' => $totalHours,
+                'generatedAt' => $generatedAt,
+            ])
+            ->setPaper('a4', 'portrait');
 
         $fileName = sprintf(
             'reporte_asistencias_%s_%s.pdf',
@@ -100,14 +137,18 @@ class ReportsController extends Controller
             $currentEntry = null;
 
             foreach ($user->attendances as $record) {
-                if ($record->type === 'entrada') {
-                    $currentEntry = $record;
-                    continue;
-                }
 
-                if ($record->type !== 'salida' || is_null($currentEntry)) {
-                    continue;
-                }
+                if ($record->type === 'entrada' && is_null($currentEntry)) {
+                    $currentEntry = $record;
+                } elseif ($record->type === 'salida' && !is_null($currentEntry)) {
+                    $duration = $currentEntry->created_at->diffInSeconds($record->created_at);
+                    $totalSeconds += $duration;
+
+                    $shifts[$currentEntry->created_at->toDateString()][] = [
+                        'entrada' => $currentEntry,
+                        'salida' => $record,
+                        'duration_in_hours' => $duration / 3600,
+                    ];
 
                 $start = $currentEntry->created_at->copy();
                 $end = $record->created_at->copy();
@@ -191,7 +232,6 @@ class ReportsController extends Controller
                 'shifts_by_day' => $shiftsByDay,
             ];
         }
-
         return $reportData;
     }
 }

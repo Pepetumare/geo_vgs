@@ -221,6 +221,11 @@
                     <div class="day-block">
                         <div class="day-title">{{ Carbon::parse($day)->format('d/m/Y') }} · Total del día:
                             {{ number_format($dayData['total_hours'], 2) }} h</div>
+=======
+                @foreach ($data['shifts_by_day'] as $day => $shifts)
+                    <div class="day-block">
+                        <div class="day-title">{{ Carbon::parse($day)->format('d/m/Y') }} · Total del día:
+                            {{ number_format(array_sum(array_column($shifts, 'duration_in_hours')), 2) }} h</div>
                         <table>
                             <thead>
                                 <tr>
@@ -233,12 +238,19 @@
                                 </tr>
                             </thead>
                             <tbody>
+
                                 @foreach ($dayData['segments'] as $shift)
                                     <tr>
                                         <td>{{ $shift['entrada_at']->format('H:i:s') }}</td>
                                         <td class="text-muted">{{ $shift['entrada']->latitude }},
                                             {{ $shift['entrada']->longitude }}</td>
                                         <td>{{ $shift['salida_at']->format('H:i:s') }}</td>
+                                @foreach ($shifts as $shift)
+                                    <tr>
+                                        <td>{{ $shift['entrada']->created_at->format('H:i:s') }}</td>
+                                        <td class="text-muted">{{ $shift['entrada']->latitude }},
+                                            {{ $shift['entrada']->longitude }}</td>
+                                        <td>{{ $shift['salida']->created_at->format('H:i:s') }}</td>
                                         <td class="text-muted">{{ $shift['salida']->latitude }},
                                             {{ $shift['salida']->longitude }}</td>
                                         <td>{{ number_format($shift['duration_in_hours'], 2) }} h</td>
