@@ -39,6 +39,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Reportes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
+    Route::get('/reports/export', [ReportsController::class, 'exportPdf'])->name('reports.export');
 
     // Boletas de Venta
     Route::get('/receipts/create', [ReceiptController::class, 'create'])->name('receipts.create');
