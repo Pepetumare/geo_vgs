@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
-//use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -69,40 +68,6 @@ class ReportsController extends Controller
             $endDate = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $totalHours = array_reduce($reportData, fn($carry, $item) => $carry + $item['total_hours'], 0);
-        $generatedAt = Carbon::now();
-
-        $pdf = app('dompdf.wrapper')  // ← COMPATIBLE CON TODAS LAS VERSIONES
-            ->loadView('admin.reports.pdf', [
-                'reportData' => $reportData,
-                'filters' => $filters,
-                'totalHours' => $totalHours,
-                'generatedAt' => $generatedAt,
-            ])
-            ->setPaper('a4', 'portrait');
-
-        $fileName = sprintf(
-            'reporte_asistencias_%s_%s.pdf',
-            Carbon::parse($filters['start_date'])->format('Ymd'),
-            Carbon::parse($filters['end_date'])->format('Ymd')
-        );
-
-        return $pdf->download($fileName);
-    }
-
-    private function resolveFilters(Request $request): array
-    {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-
-        if (!$startDate) {
-            $startDate = Carbon::now()->startOfMonth()->toDateString();
-        }
-
-        if (!$endDate) {
-            $endDate = Carbon::now()->endOfMonth()->toDateString();
-        }
-
         if (Carbon::parse($endDate)->lessThan(Carbon::parse($startDate))) {
             $endDate = Carbon::parse($startDate)->toDateString();
         }
@@ -141,66 +106,58 @@ class ReportsController extends Controller
                 if ($record->type === 'entrada' && is_null($currentEntry)) {
                     $currentEntry = $record;
                 } elseif ($record->type === 'salida' && !is_null($currentEntry)) {
-                    $duration = $currentEntry->created_at->diffInSeconds($record->created_at);
-                    $totalSeconds += $duration;
+                    $start = $currentEntry->created_at->copy();
+                    $end = $record->created_at->copy();
 
-                    $shifts[$currentEntry->created_at->toDateString()][] = [
-                        'entrada' => $currentEntry,
-                        'salida' => $record,
-                        'duration_in_hours' => $duration / 3600,
-                    ];
+                    if ($end->lessThanOrEqualTo($start)) {
+                        $currentEntry = null;
+                        continue;
+                    }
 
-                $start = $currentEntry->created_at->copy();
-                $end = $record->created_at->copy();
+                    $segmentStart = $start->copy();
 
-                if ($end->lessThanOrEqualTo($start)) {
+                    while ($segmentStart->lt($end)) {
+                        $dayKey = $segmentStart->toDateString();
+                        $dayEnd = $segmentStart->copy()->endOfDay();
+                        $segmentEnd = $end->lessThan($dayEnd) ? $end->copy() : $dayEnd;
+
+                        $durationSeconds = $segmentStart->diffInSeconds($segmentEnd);
+
+                        if ($durationSeconds <= 0) {
+                            $segmentStart = $segmentStart->copy()->addDay()->startOfDay();
+                            continue;
+                        }
+
+                        $dailyTotals[$dayKey] = $dailyTotals[$dayKey] ?? 0;
+                        $availableSeconds = (24 * 3600) - $dailyTotals[$dayKey];
+
+                        if ($availableSeconds <= 0) {
+                            $segmentStart = $segmentEnd->copy()->addSecond();
+                            continue;
+                        }
+
+                        $consumedSeconds = min($durationSeconds, $availableSeconds);
+
+                        $segmentsByDay[$dayKey][] = [
+                            'entrada' => $currentEntry,
+                            'salida' => $record,
+                            'entrada_at' => $segmentStart->copy(),
+                            'salida_at' => $segmentStart->copy()->addSeconds($consumedSeconds),
+                            'duration_in_hours' => $consumedSeconds / 3600,
+                        ];
+
+                        $dailyTotals[$dayKey] += $consumedSeconds;
+                        $totalSeconds += $consumedSeconds;
+
+                        if ($durationSeconds > $consumedSeconds) {
+                            $segmentStart = $segmentStart->copy()->addDay()->startOfDay();
+                        } else {
+                            $segmentStart = $segmentEnd->copy()->addSecond();
+                        }
+                    }
+
                     $currentEntry = null;
-                    continue;
                 }
-
-                $segmentStart = $start->copy();
-
-                while ($segmentStart->lt($end)) {
-                    $dayKey = $segmentStart->toDateString();
-                    $dayEnd = $segmentStart->copy()->endOfDay();
-                    $segmentEnd = $end->lessThan($dayEnd) ? $end->copy() : $dayEnd;
-
-                    $durationSeconds = $segmentStart->diffInSeconds($segmentEnd);
-
-                    if ($durationSeconds <= 0) {
-                        $segmentStart = $segmentStart->copy()->addDay()->startOfDay();
-                        continue;
-                    }
-
-                    $dailyTotals[$dayKey] = $dailyTotals[$dayKey] ?? 0;
-                    $availableSeconds = (24 * 3600) - $dailyTotals[$dayKey];
-
-                    if ($availableSeconds <= 0) {
-                        $segmentStart = $segmentEnd->copy()->addSecond();
-                        continue;
-                    }
-
-                    $consumedSeconds = min($durationSeconds, $availableSeconds);
-
-                    $segmentsByDay[$dayKey][] = [
-                        'entrada' => $currentEntry,
-                        'salida' => $record,
-                        'entrada_at' => $segmentStart->copy(),
-                        'salida_at' => $segmentStart->copy()->addSeconds($consumedSeconds),
-                        'duration_in_hours' => $consumedSeconds / 3600,
-                    ];
-
-                    $dailyTotals[$dayKey] += $consumedSeconds;
-                    $totalSeconds += $consumedSeconds;
-
-                    if ($durationSeconds > $consumedSeconds) {
-                        $segmentStart = $segmentStart->copy()->addDay()->startOfDay();
-                    } else {
-                        $segmentStart = $segmentEnd->copy()->addSecond();
-                    }
-                }
-
-                $currentEntry = null;
             }
 
             if ($totalSeconds <= 0) {
