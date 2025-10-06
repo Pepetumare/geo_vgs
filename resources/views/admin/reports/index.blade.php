@@ -116,11 +116,11 @@
                                     <h4 class="text-md font-semibold">{{ $data['user_name'] }} - Total:
                                         {{ number_format($data['total_hours'], 2) }} horas</h4>
 
-                                    @foreach ($data['shifts_by_day'] as $day => $shifts)
+                                    @foreach ($data['shifts_by_day'] as $day => $dayData)
                                         <div class="mt-4">
                                             <p class="font-semibold text-sm mb-2">Día:
                                                 {{ Carbon\Carbon::parse($day)->format('d/m/Y') }} - Total:
-                                                {{ number_format(array_sum(array_column($shifts, 'duration_in_hours')), 2) }}
+                                                {{ number_format($dayData['total_hours'], 2) }}
                                                 horas</p>
                                             <div class="overflow-x-auto">
                                                 <table class="min-w-full text-sm">
@@ -136,10 +136,10 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($shifts as $shift)
+                                                        @foreach ($dayData['segments'] as $shift)
                                                             <tr class="border-b dark:border-gray-700">
                                                                 <td class="px-4 py-2">
-                                                                    {{ $shift['entrada']->created_at->format('H:i:s') }}
+                                                                    {{ $shift['entrada_at']->format('H:i:s') }}
                                                                 </td>
                                                                 <td class="px-4 py-2">
                                                                     <button type="button"
@@ -147,7 +147,7 @@
                                                                         class="text-indigo-600 hover:text-indigo-900 text-xs">Ver</button>
                                                                 </td>
                                                                 <td class="px-4 py-2">
-                                                                    {{ $shift['salida']->created_at->format('H:i:s') }}
+                                                                    {{ $shift['salida_at']->format('H:i:s') }}
                                                                 </td>
                                                                 <td class="px-4 py-2">
                                                                     <button type="button"
