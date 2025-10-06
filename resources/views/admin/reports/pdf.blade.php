@@ -56,18 +56,18 @@
 
         .summary-card {
             flex: 1 1 160px;
-            background: #ffffff;
+            background: #fff;
             border-radius: 12px;
             padding: 16px;
             border: 1px solid #e5e7eb;
-            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 8px 16px rgba(15, 23, 42, .08);
         }
 
         .summary-card span {
             display: block;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: .06em;
             color: #6b7280;
         }
 
@@ -79,11 +79,11 @@
 
         .user-card {
             margin-bottom: 24px;
-            background: #ffffff;
+            background: #fff;
             border-radius: 16px;
             border: 1px solid #e5e7eb;
             padding: 20px;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
             page-break-inside: avoid;
         }
 
@@ -105,7 +105,7 @@
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: .08em;
         }
 
         .day-block {
@@ -130,7 +130,7 @@
 
         thead {
             background: #111827;
-            color: #ffffff;
+            color: #fff;
         }
 
         th,
@@ -140,7 +140,7 @@
         }
 
         tbody tr:nth-child(even) {
-            background-color: #eef2ff;
+            background: #eef2ff;
         }
 
         .text-muted {
@@ -165,7 +165,7 @@
             border: 2px dashed #d1d5db;
             border-radius: 16px;
             color: #6b7280;
-            background: #ffffff;
+            background: #fff;
         }
 
         .footer {
@@ -180,8 +180,10 @@
 <body>
     <div class="header">
         <h1>Reporte de Asistencias</h1>
-        <p class="meta">Periodo del {{ Carbon::parse($filters['start_date'])->format('d/m/Y') }} al
-            {{ Carbon::parse($filters['end_date'])->format('d/m/Y') }}</p>
+        <p class="meta">
+            Periodo del {{ Carbon::parse($filters['start_date'])->format('d/m/Y') }}
+            al {{ Carbon::parse($filters['end_date'])->format('d/m/Y') }}
+        </p>
         <p class="meta">Generado el {{ $generatedAt->format('d/m/Y H:i') }}</p>
     </div>
 
@@ -196,8 +198,10 @@
         </div>
         <div class="summary-card">
             <span>Rango seleccionado</span>
-            <strong>{{ Carbon::parse($filters['start_date'])->format('d M Y') }} —
-                {{ Carbon::parse($filters['end_date'])->format('d M Y') }}</strong>
+            <strong>
+                {{ Carbon::parse($filters['start_date'])->translatedFormat('d M Y') }} —
+                {{ Carbon::parse($filters['end_date'])->translatedFormat('d M Y') }}
+            </strong>
         </div>
     </div>
 
@@ -217,10 +221,16 @@
                     <span class="badge">{{ number_format($data['total_hours'], 2) }} h</span>
                 </div>
 
-                @foreach ($data['shifts_by_day'] as $day => $shifts)
+                @foreach ($data['shifts_by_day'] as $day => $bucket)
+                    @php
+                        $segments = $bucket['segments'] ?? [];
+                        $dayTotal = $bucket['total_hours'] ?? collect($segments)->sum('duration_in_hours');
+                    @endphp
                     <div class="day-block">
-                        <div class="day-title">{{ Carbon::parse($day)->format('d/m/Y') }} · Total del día:
-                            {{ number_format(array_sum(array_column($shifts, 'duration_in_hours')), 2) }} h</div>
+                        <div class="day-title">
+                            {{ Carbon::parse($day)->format('d/m/Y') }} · Total del día:
+                            {{ number_format($dayTotal, 2) }} h
+                        </div>
                         <table>
                             <thead>
                                 <tr>
@@ -233,7 +243,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($shifts as $shift)
+                                @forelse ($segments as $shift)
                                     <tr>
                                         <td>{{ $shift['entrada']->created_at->format('H:i:s') }}</td>
                                         <td class="text-muted">{{ $shift['entrada']->latitude }},
@@ -243,14 +253,18 @@
                                             {{ $shift['salida']->longitude }}</td>
                                         <td>{{ number_format($shift['duration_in_hours'], 2) }} h</td>
                                         <td>
-                                            @if ($shift['entrada']->is_suspicious)
+                                            @if (!empty($shift['entrada']->is_suspicious))
                                                 <span class="alert">⚠ Posible simulación</span>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-muted">Sin segmentos registrados este día.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
