@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf;
+//use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -17,8 +17,8 @@ class ReportsController extends Controller
         $reportData = $this->buildReportData($filters);
 
         $chartLabels = json_encode(array_column($reportData, 'user_name'));
-        $chartData = json_encode(array_map(fn ($hours) => round($hours, 2), array_column($reportData, 'total_hours')));
-        $totalHours = array_reduce($reportData, fn ($carry, $item) => $carry + $item['total_hours'], 0);
+        $chartData = json_encode(array_map(fn($hours) => round($hours, 2), array_column($reportData, 'total_hours')));
+        $totalHours = array_reduce($reportData, fn($carry, $item) => $carry + $item['total_hours'], 0);
 
         return view('admin.reports.index', [
             'reportData' => $reportData,
@@ -34,15 +34,17 @@ class ReportsController extends Controller
     {
         $filters = $this->resolveFilters($request);
         $reportData = $this->buildReportData($filters);
-        $totalHours = array_reduce($reportData, fn ($carry, $item) => $carry + $item['total_hours'], 0);
+        $totalHours = array_reduce($reportData, fn($carry, $item) => $carry + $item['total_hours'], 0);
         $generatedAt = Carbon::now();
 
-        $pdf = Pdf::loadView('admin.reports.pdf', [
-            'reportData' => $reportData,
-            'filters' => $filters,
-            'totalHours' => $totalHours,
-            'generatedAt' => $generatedAt,
-        ])->setPaper('a4', 'portrait');
+        $pdf = app('dompdf.wrapper')  // ← COMPATIBLE CON TODAS LAS VERSIONES
+            ->loadView('admin.reports.pdf', [
+                'reportData' => $reportData,
+                'filters' => $filters,
+                'totalHours' => $totalHours,
+                'generatedAt' => $generatedAt,
+            ])
+            ->setPaper('a4', 'portrait');
 
         $fileName = sprintf(
             'reporte_asistencias_%s_%s.pdf',
